@@ -256,7 +256,7 @@ export class LatexParser {
    * @author Kirill Chuvilin <k.chuvilin@texnous.org>
    */
   parseEnvironmentToken_(context: Context): EnvironmentToken | undefined {
-    if (!context.source.startsWith('\\begin', context.position)) return undefined;
+    if (context.source.indexOf('\\begin') !== (context.position)) return undefined;
     context.position += 6; // just after "\begin"
     parseSpaceToken_(context); // skip spaces
     // try to obtain the environment name
@@ -418,7 +418,7 @@ export class LatexParser {
           // if can parse the parameter token
           if (this.parseParameterToken_(context, mustNotBeUndefined(parameter), parameterEndLabel)) {
             // exit if there is no the end label at the positions
-            if (!context.source.startsWith(parameterEndLabel, context.position)) return undefined;
+            if (context.source.indexOf(parameterEndLabel) !== context.position) return undefined;
             context.position += parameterEndLabel.length; // skip the end label in the sources
             context.charNumber += parameterEndLabel.length; // skip the end label in the line
             ++iPatternComponent; // skip the end label in the pattern
@@ -433,7 +433,7 @@ export class LatexParser {
           while (parseCommentLine_(context)) {
           } // skip all the comments
           // if the sources fragment is equal the pattern component
-          if (context.source.startsWith(patternComponent, context.position)) {
+          if (context.source.indexOf(patternComponent) === (context.position)) {
             context.position += patternComponent.length; // skip the pattern component in the sources
             context.charNumber += patternComponent.length; // skip the pattern component in the line
             continue; // go to the next pattern component
@@ -466,7 +466,7 @@ export class LatexParser {
       // TODO parse special lexemes
     default: {
       // while not reached the label
-      while (!context.source.startsWith(endLabel, context.position)) {
+      while (context.source.indexOf(endLabel) !== (context.position)) {
         if (context.position >= context.source.length) { // if there is no more sources
           // TODO notification about unexpected sources end
           return false;
