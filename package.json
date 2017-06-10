@@ -8,9 +8,9 @@
     "syntax tree",
     "ast"
   ],
-  "homepage": "https://bitbucket.org/digitalheir/latex-parser",
+  "homepage": "https://github.com/digitalheir/latex-parser",
   "bugs": {
-    "url": "https://bitbucket.org/digitalheir/latex-parser/issues",
+    "url": "https://github.com/digitalheir/latex-parser/issues",
     "email": "maartentrompper@gmail.com"
   },
   "license": "LGPL-3.0",
@@ -26,12 +26,12 @@
     },
     {
       "name": "Maarten Trompper",
-      "email": "maartentrompper@gmail.com"
+      "email": "maartentrompper@freedom.nl"
     }
   ],
   "main": "main.js",
   "types": "main.d.ts",
-  "repository": "bitbucket:digitalheir/latex-parser",
+  "repository": "git@github.com:digitalheir/latex-parser.git",
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
