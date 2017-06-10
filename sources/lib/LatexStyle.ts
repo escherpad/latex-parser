@@ -52,6 +52,29 @@ export interface PackageProperties {
   environments?: EnvironmentProperties[];
 }
 
+export function mustBePackageProperties(x: any): PackageProperties {
+  if (!isPackageProperties(x)) throw new Error("Invalid format for PackageProperties");
+  return x;
+}
+
+export function isPackageProperties(x: any): x is PackageProperties {
+  // TODO all props are optional...
+  // symbols?: SymbolProperties[];
+  // commands?: CommandProperties[];
+  // environments?: EnvironmentProperties[];
+
+  return !Object.keys(x).some(k => {
+    switch (k) {
+      case "symbols":
+      case "commands":
+      case "environments":
+        return false;
+      default:
+        return true;
+    }
+  });
+}
+
 /**
  * LaTeX style collection
  * @class
