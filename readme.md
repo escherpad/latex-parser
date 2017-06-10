@@ -1,6 +1,6 @@
 # JavaScript LaTeX parser
 
-[Live demo in browser](https://github.com/digitalheir/latex-parser)
+[Live demo in browser](https://digitalheir.github.io/latex-parser/)
 
 This is a library designed to build abstract syntax trees for LaTeX documents using JavaScript / TypeScript.
 
