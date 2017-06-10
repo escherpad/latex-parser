@@ -1,5 +1,7 @@
 # LaTeX parser core modules
 
+[Live demo in browser](https://github.com/digitalheir/latex-parser)
+
 This is a set of libraries designed to build abstract syntax trees for LaTeX documents using JavaScript.
 
 This is a TypeScript fork of the [**TeXnous project**](http://texnous.org). The original source code has been ported to TypeScript, and is compiled to a minified ES5 UMD module for use in Node and in the browser.
