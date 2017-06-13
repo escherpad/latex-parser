@@ -306,7 +306,22 @@ export class LatexParser {
 
 
   /**
-   * Parse a command token
+   * Parse a command token.
+   *
+   * By the rules of TeX syntax, the "name" of a macro that starts with a \ (backslash) character must either
+   * - consist of a single non-alphabetical character.
+   *   Some examples:
+   *     \, (insert thin space),
+   *     \% ( the % character),
+   *     \\ (insert line break),
+   *     \[ (open display math), and
+   *     \) (close inline math).
+   * or
+   * - contain only uppercase and lowercase alphabetical characters: a-z and A-Z. No numerals, and no other characters
+   *   belonging to non-letter categories either. (Well, there are certain ways of assigning "letter-category" status to
+   *   non-letter characters, but that's a topic for a different discussion.)
+   *   (https://tex.stackexchange.com/questions/66666/command-macro-name-cannot-include-numbers-and-symbols/66695#66695)
+   *
    * @param {!Context} context the parsing context
    * @return {?CommandToken} the parsed token or undefined if cannot parse
    * @private
@@ -314,7 +329,8 @@ export class LatexParser {
    */
   parseCommandToken_(context: Context): Token | undefined {
     // try to find a command name
-    const cmdMatch = context.source.substring(context.position).match(/^\\([\w@]+\*?)/);
+    // TODO [a-zA-Z] instead of [\w]?
+    const cmdMatch = context.source.substring(context.position).match(/^\\((?:[\w@]+\*?)|(?:[^\w]))/);
 
     if (!cmdMatch)
       return undefined; // exit if cannot find a command name
