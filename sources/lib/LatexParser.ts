@@ -91,11 +91,12 @@ function parseSpaceToken_(context: Context): SpaceToken | undefined {
     // go to the next iteration if there was a comment
     if (parseCommentLine_(context)) continue;
     switch (context.source[context.position]) { // depend on the sources current character
-      case ' ': case '\t': // if a space or a tabular
-      isSpace = true; // and one more parsed char
-      ++context.position; // go to the next sources char
-      ++context.charNumber; // the next char of the sources line
-      continue;
+      case ' ':
+      case '\t': // if a space or a tabular
+        isSpace = true; // and one more parsed char
+        ++context.position; // go to the next sources char
+        ++context.charNumber; // the next char of the sources line
+        continue;
       case '\n': // if a line break
         isSpace = true; // and one more parsed char
         ++nLineBreaks; // one more parsed line
@@ -107,7 +108,7 @@ function parseSpaceToken_(context: Context): SpaceToken | undefined {
     break; // stop if not a space char
   }
   // create a space token if needed
-  return isSpace ? new SpaceToken({ lineBreakCount: nLineBreaks }) : undefined;
+  return isSpace ? new SpaceToken({lineBreakCount: nLineBreaks}) : undefined;
 }
 
 /**
@@ -130,9 +131,8 @@ export class LatexParser {
     if (!(latexStyle instanceof LatexStyle))
       throw new TypeError('"latexStyle" isn\'t a LatexStyle instance');
     // store the style description
-    Object.defineProperty(this, 'latexStyle', { value: latexStyle, enumerable: true });
+    Object.defineProperty(this, 'latexStyle', {value: latexStyle, enumerable: true});
   }
-
 
 
   /**
@@ -214,7 +214,7 @@ export class LatexParser {
       if (context.source[context.position] === '{') { // if the parameter is bounded by brackets
         // create the parameter token
         context.currentToken =
-          new ParameterToken({ hasBrackets: true, hasSpacePrefix: spacePrefixState});
+            new ParameterToken({hasBrackets: true, hasSpacePrefix: spacePrefixState});
         ++context.position; // go to the sources next char
         ++context.charNumber; // go to the current line next char
         // exit if cannot parse until the closing bracket
@@ -225,14 +225,14 @@ export class LatexParser {
       } else { // if the parameter is't bounded by brackets
         // create the parameter token
         context.currentToken =
-          new ParameterToken({ hasBrackets: false, hasSpacePrefix: spacePrefixState});
+            new ParameterToken({hasBrackets: false, hasSpacePrefix: spacePrefixState});
         // exit if cannot parse a parameter token
         if (this.parseToken_(context) === undefined) return undefined;
       }
     } else { // if the parameter must be parsed until the end label
       // create the parameter token
       context.currentToken =
-        new ParameterToken({ hasBrackets: false, hasSpacePrefix: false});
+          new ParameterToken({hasBrackets: false, hasSpacePrefix: false});
 
       // return if cannot parse
       if (!this.parseUntilLabel_(context, opt_endLabel, parameter.lexeme)) return undefined;
@@ -244,8 +244,6 @@ export class LatexParser {
     //noinspection JSValidateTypes
     return parameterToken;
   }
-
-
 
 
   /**
@@ -269,8 +267,8 @@ export class LatexParser {
     // try to get the corresponding environment
     let environment: Environment | EnvironmentAndPackage = this.latexStyle.environments(context.currentState, name)[0];
     let environmentToken = context.currentToken = environment ? // the environment token
-      new EnvironmentToken({ environment: environment.environment }) :
-      new EnvironmentToken({ name: name });
+        new EnvironmentToken({environment: environment.environment}) :
+        new EnvironmentToken({name: name});
     // TODO unknown environment notification
     // try to parse the environment begin command
     let symbols: Command[] = this.latexStyle.commands(context.currentState, name);
@@ -278,7 +276,7 @@ export class LatexParser {
     if (beginCommandToken === undefined) { // if cannot parse a command
       // TODO notification about the unrecognized command
       // generate unrecognized command token
-      beginCommandToken = new CommandToken({ name: name });
+      beginCommandToken = new CommandToken({name: name});
     }
     //noinspection JSCheckFunctionSignatures
     processParsedToken_(context, beginCommandToken);
@@ -297,7 +295,7 @@ export class LatexParser {
     if (endCommandToken === undefined) { // if cannot parse a command
       // TODO notification about the unrecognized command
       // generate unrecognized command token
-      endCommandToken = new CommandToken({ name: 'end' + name });
+      endCommandToken = new CommandToken({name: 'end' + name});
     }
     processParsedToken_(context, endCommandToken); // process the end command token
     context.currentToken = currentTokenBackup; // restore the current token
@@ -326,6 +324,8 @@ export class LatexParser {
    * @return {?CommandToken} the parsed token or undefined if cannot parse
    * @private
    * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+   * @author Maarten Trompper <maartentrompper@freedom.nl>
+   *
    */
   parseCommandToken_(context: Context): Token | undefined {
     // try to find a command name
@@ -337,14 +337,14 @@ export class LatexParser {
 
     context.position += cmdMatch[0].length; // set position just after the command name
     context.charNumber += cmdMatch[0].length; // skip all the command name chars
-    
+
     // try to parse a command token
-    
+
     let token: Token | undefined = this.parsePatterns_(context, this.latexStyle.commands(context.currentState, cmdMatch[1]));
     if (token === undefined) { // if cannot parse a command token
       // TODO notification about the unrecognized command
       // generate unrecognized command token
-      token = new CommandToken({ name: cmdMatch[1] });
+      token = new CommandToken({name: cmdMatch[1]});
     }
     //noinspection JSValidateTypes
     return token;
@@ -371,7 +371,7 @@ export class LatexParser {
       // go to the next line character (the line is the same, \n was parsed for a space token)
       ++context.charNumber;
       // generate unrecognized symbol token
-      token = new SymbolToken({ pattern: sourceCharacter });
+      token = new SymbolToken({pattern: sourceCharacter});
     } else { // if the token was parsed
       // TODO parse words and numbers
     }
@@ -417,16 +417,16 @@ export class LatexParser {
     let currentTokenBackup = context.currentToken; // store the current token
     // if a command description is given
     context.currentToken = symbol instanceof Command ?
-      new CommandToken({ command: symbol }) : // generate a command token
-      new SymbolToken({ symbol: symbol }); // generate a symbol token
+        new CommandToken({command: symbol}) : // generate a command token
+        new SymbolToken({symbol: symbol}); // generate a symbol token
 
     let patternComponents = symbol.patternComponents; // the symbol pattern components
     let nPatternComponents = patternComponents.length; // the pattern componen number
     let iPatternComponent = 0; // the pattern component iterator
     // for all the pattern components
-    for ( ; iPatternComponent < nPatternComponents; ++iPatternComponent) {
+    for (; iPatternComponent < nPatternComponents; ++iPatternComponent) {
       let patternComponent = patternComponents[iPatternComponent]; // the pattern component
-      if(isNumber(patternComponent)){ // if a parameter is expected
+      if (isNumber(patternComponent)) { // if a parameter is expected
         let parameter: Parameter | undefined = symbol.parameter(patternComponent); // the parameter description
         // try to get the end label for the parameter
         let parameterEndLabel = patternComponents[iPatternComponent + 1];
@@ -445,15 +445,15 @@ export class LatexParser {
           if (this.parseParameterToken_(context, mustNotBeUndefined(parameter))) continue;
         }
       }
-      else if(isString(patternComponent)){
-          while (parseCommentLine_(context)) {
-          } // skip all the comments
-          // if the sources fragment is equal the pattern component
-          if (context.source.substring(context.position).indexOf(patternComponent) === 0) {
-            context.position += patternComponent.length; // skip the pattern component in the sources
-            context.charNumber += patternComponent.length; // skip the pattern component in the line
-            continue; // go to the next pattern component
-          }
+      else if (isString(patternComponent)) {
+        while (parseCommentLine_(context)) {
+        } // skip all the comments
+        // if the sources fragment is equal the pattern component
+        if (context.source.substring(context.position).indexOf(patternComponent) === 0) {
+          context.position += patternComponent.length; // skip the pattern component in the sources
+          context.charNumber += patternComponent.length; // skip the pattern component in the line
+          continue; // go to the next pattern component
+        }
       } else if (parseSpaceToken_(context))
         continue;
       break; // stop parsing if there was no continue call
@@ -480,20 +480,21 @@ export class LatexParser {
   parseUntilLabel_(context: Context, endLabel: string, opt_lexeme?: Lexeme) {
     switch (opt_lexeme) {
       // TODO parse special lexemes
-    default: {
-      // while not reached the label
-      while (context.source.substring(context.position).indexOf(endLabel) !== 0) {
-        if (context.position >= context.source.length) { // if there is no more sources
-          // TODO notification about unexpected sources end
-          return false;
+      default: {
+        // while not reached the label
+        while (context.source.substring(context.position).indexOf(endLabel) !== 0) {
+          if (context.position >= context.source.length) { // if there is no more sources
+            // TODO notification about unexpected sources end
+            return false;
+          }
+          this.parseToken_(context);
         }
-        this.parseToken_(context);
+        return true;
       }
-      return true;
-    }}
+    }
   }
-};
-
+}
+;
 
 
 /**
@@ -537,7 +538,6 @@ export class Context {
   }
 
 
-
   /**
    * Copy this context
    * @param {!Context=} opt_target the context to copy to or undefined to create a new one
@@ -558,7 +558,6 @@ export class Context {
   }
 
 
-
   /**
    * Update the LaTeX state
    * @param {!Array.<!Latex.Operation>} operations the LaTeX operation list
@@ -571,37 +570,38 @@ export class Context {
     operations.forEach((operation: Operation) => {
 
       switch (operation.directive) {
-      case Directive.BEGIN:
+        case Directive.BEGIN:
 
-        switch (operation.operand) {
-        case GROUP:
-          this.currentState.update(newModeStates); // store the mode states
-          newModeStates = {}; // no more states to update
-          this.stateStack.push(this.currentState.copy()); // store the current state
+          switch (operation.operand) {
+            case GROUP:
+              this.currentState.update(newModeStates); // store the mode states
+              newModeStates = {}; // no more states to update
+              this.stateStack.push(this.currentState.copy()); // store the current state
+              break;
+            default:
+
+              newModeStates[operation.operand] = true; // turn the state on
+          }
           break;
-        default:
+        case Directive.END:
 
-          newModeStates[operation.operand] = true; // turn the state on
-        }
-        break;
-      case Directive.END:
+          switch (operation.operand) {
+            case GROUP:
+              newModeStates = {}; // no need to store the states
+              if (this.stateStack.length < 1) throw new Error('state stack is empty');
+              this.currentState = mustNotBeUndefined(this.stateStack.pop()); // restore the current state
+              break;
+            default:
 
-        switch (operation.operand) {
-        case GROUP:
-          newModeStates = {}; // no need to store the states
-          if (this.stateStack.length < 1) throw new Error('state stack is empty');
-          this.currentState = mustNotBeUndefined(this.stateStack.pop()); // restore the current state
+              newModeStates[operation.operand] = false; // turn the state off
+          }
           break;
-        default:
-
-          newModeStates[operation.operand] = false; // turn the state off
-        }
-        break;
       }
     });
     this.currentState.update(newModeStates); // store the mode states
   }
-};
+}
+;
 
 //noinspection JSUnusedGlobalSymbols // TODO
 // export default LatexParser;

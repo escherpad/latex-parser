@@ -120,8 +120,13 @@ describe("LatexParser", () => {
   /**
    * LaTeX commands handling tests
    * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
+   * @author Maarten Trompper <maartentrompper@freedom.nl>
    */
   it("parse commands", function () {
+    expect(latexParser.parse('\\"o').join('')).to.equal('CommandToken{\\"o}');
+    expect(latexParser.parse('\\"[b]o').join('')).to.equal('CommandToken{\\"[b]o}');
+    expect(latexParser.parse('\\"[b]{oo}').join('')).to.equal('CommandToken{\\"[b]{oo}}');
+
     expect(latexParser.parse('\\author{Name}').join('')).to.equal('CommandToken{\\author{Name}}');
     expect(latexParser.parse('\\author [Opt Name] {Name}').join('')).to.equal('CommandToken{\\author [Opt Name] {Name}}');
     expect(latexParser.parse('\\author[{Opt Name}] {Name}').join('')).to.equal('CommandToken{\\author[{Opt Name}] {Name}}');
