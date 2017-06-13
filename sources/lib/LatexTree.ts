@@ -36,19 +36,19 @@ import {mustNotBeUndefined} from "./Utils";
  */
 export class LatexTree extends SyntaxTree {
 
-  /**
-   * Constructor
-   * @param {!Token} rootToken the root token (must have no parent and no tree)
-   * @param {string} source the sources text that has this syntax tree
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(rootToken: Token, source: string) {
-    if (!(rootToken instanceof Token))
-      throw new TypeError('"rootToken" isn\'t a Token instance');
-    super(rootToken, source); // the superclass constructor
-  }
-};
-
+    /**
+     * Constructor
+     * @param {!Token} rootToken the root token (must have no parent and no tree)
+     * @param {string} source the sources text that has this syntax tree
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(rootToken: Token, source: string) {
+        if (!(rootToken instanceof Token))
+            throw new TypeError('"rootToken" isn\'t a Token instance');
+        super(rootToken, source); // the superclass constructor
+    }
+}
+;
 
 
 /**
@@ -59,8 +59,8 @@ export class LatexTree extends SyntaxTree {
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface TokenProperties {
-  parentToken?: Token;
-  childTokens?: Token[];
+    parentToken?: Token;
+    childTokens?: Token[];
 }
 
 
@@ -72,46 +72,46 @@ export interface TokenProperties {
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class Token extends Node {
-  lexeme?: Lexeme;
+    lexeme?: Lexeme;
 
-  /**
-   * Constructor
-   * @param {!TokenProperties=} opt_initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(opt_initialProperties: TokenProperties = {}) {
-    if (opt_initialProperties === undefined) { // if the initial properties are not set
-      super(); // superclass constructor
-    } else if (opt_initialProperties instanceof Object) { // if the initial properties are set
-      // superclass constructor
-      // superclass initial properties
-      let superInitialProperties = Object.create(opt_initialProperties);
-      superInitialProperties.parentNode = opt_initialProperties.parentToken;
-      superInitialProperties.childNodes = opt_initialProperties.childTokens;
-      super(superInitialProperties);
-    } else { // if the initial properties are in unsupported type
-      throw new TypeError('"initialProperties" isn\'t an Object instance');
+    /**
+     * Constructor
+     * @param {!TokenProperties=} opt_initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(opt_initialProperties: TokenProperties = {}) {
+        if (opt_initialProperties === undefined) { // if the initial properties are not set
+            super(); // superclass constructor
+        } else if (opt_initialProperties instanceof Object) { // if the initial properties are set
+            // superclass constructor
+            // superclass initial properties
+            let superInitialProperties = Object.create(opt_initialProperties);
+            superInitialProperties.parentNode = opt_initialProperties.parentToken;
+            superInitialProperties.childNodes = opt_initialProperties.childTokens;
+            super(superInitialProperties);
+        } else { // if the initial properties are in unsupported type
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        }
     }
-  }
 
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-    return skipNodeClass ? super.toString(true) : 'Token{' + super.toString(true) + '}';
-  }
-};
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        return skipNodeClass ? super.toString(true) : 'Token{' + super.toString(true) + '}';
+    }
+}
+;
 Object.defineProperties(Token.prototype, { // default properties
-  lexeme: { value: undefined, enumerable: true }, // no lexeme
-  parentNodeClass_: { value: Token } // parent node must be an EnvironmentToken instance
+    lexeme: {value: undefined, enumerable: true}, // no lexeme
+    parentNodeClass_: {value: Token} // parent node must be an EnvironmentToken instance
 });
-
 
 
 /**
@@ -123,8 +123,8 @@ Object.defineProperties(Token.prototype, { // default properties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface SymbolTokenProperties extends TokenProperties {
-  symbol?: Symbol;
-  pattern?: string;
+    symbol?: Symbol;
+    pattern?: string;
 }
 
 
@@ -137,92 +137,92 @@ export interface SymbolTokenProperties extends TokenProperties {
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class SymbolToken extends Token {
-  symbol?: Symbol;
+    symbol?: Symbol;
 
-  /**
-   * Constructor
-   * @param {!SymbolTokenProperties} initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(initialProperties: SymbolTokenProperties) {
-    if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    super(initialProperties); // the superclass constructor
-    if (initialProperties.symbol) { // if the symbol is defined
-      if (!(initialProperties.symbol instanceof Symbol))
-        throw new TypeError('"initialProperties.symbol" isn\'t a Symbol instance');
-      // store the symbol
-      Object.defineProperty(this, 'symbol', {value: initialProperties.symbol, enumerable: true});
-    } else { // if the symbol isn't defined
-      if (typeof initialProperties.pattern !== 'string')
-        throw new TypeError('"initialProperties.pattern" isn\'t a string');
-      // store the unrecognized pattern
-      Object.defineProperty(this, 'pattern', { value: initialProperties.pattern });
+    /**
+     * Constructor
+     * @param {!SymbolTokenProperties} initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(initialProperties: SymbolTokenProperties) {
+        if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        super(initialProperties); // the superclass constructor
+        if (initialProperties.symbol) { // if the symbol is defined
+            if (!(initialProperties.symbol instanceof Symbol))
+                throw new TypeError('"initialProperties.symbol" isn\'t a Symbol instance');
+            // store the symbol
+            Object.defineProperty(this, 'symbol', {value: initialProperties.symbol, enumerable: true});
+        } else { // if the symbol isn't defined
+            if (typeof initialProperties.pattern !== 'string')
+                throw new TypeError('"initialProperties.pattern" isn\'t a string');
+            // store the unrecognized pattern
+            Object.defineProperty(this, 'pattern', {value: initialProperties.pattern});
+        }
     }
-  }
 
 
-  /**
-   * Get the logical lexeme
-   * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get lexeme (): Lexeme | undefined {
-    
-    return this.symbol ? this.symbol.lexeme : undefined;
-  }
+    /**
+     * Get the logical lexeme
+     * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get lexeme(): Lexeme | undefined {
 
-
-  /**
-   * Get the symbol LaTeX pattern
-   * @return {string} the symbol pattern
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get pattern (): string {
-    return mustNotBeUndefined(this.symbol).pattern;
-  }
-
-
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-    let source = '';
-    let iParameter = 0; // the parameter iterator
-    
-    let pattern = this.pattern; // LaTeX input pattern
-    // for all the pattern chars
-    for (
-      let nPatternChars = pattern.length, iPatternChar = 0;
-      iPatternChar < nPatternChars;
-      ++iPatternChar
-    ) {
-      let patternChar = pattern[iPatternChar]; // the pattern char
-      if (patternChar === '#') { // if a parameter place
-        ++iPatternChar; // go to the next pattern char
-        let parameterToken = this.childNode(iParameter++); // try to get the parameter token
-        source += parameterToken ? parameterToken.toString(true) : '??';
-      } else { // if the ordinary pattern char
-        source += patternChar;
-      }
+        return this.symbol ? this.symbol.lexeme : undefined;
     }
-    return skipNodeClass ?
-      source :
-      'SymbolToken' + (this.symbol ? '' : '[?]') + '{' + source + '}';
-  }
-};
+
+
+    /**
+     * Get the symbol LaTeX pattern
+     * @return {string} the symbol pattern
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get pattern(): string {
+        return mustNotBeUndefined(this.symbol).pattern;
+    }
+
+
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        let source = '';
+        let iParameter = 0; // the parameter iterator
+
+        let pattern = this.pattern; // LaTeX input pattern
+        // for all the pattern chars
+        for (
+            let nPatternChars = pattern.length, iPatternChar = 0;
+            iPatternChar < nPatternChars;
+            ++iPatternChar
+        ) {
+            let patternChar = pattern[iPatternChar]; // the pattern char
+            if (patternChar === '#') { // if a parameter place
+                ++iPatternChar; // go to the next pattern char
+                let parameterToken = this.childNode(iParameter++); // try to get the parameter token
+                source += parameterToken ? parameterToken.toString(true) : '??';
+            } else { // if the ordinary pattern char
+                source += patternChar;
+            }
+        }
+        return skipNodeClass ?
+            source :
+            'SymbolToken' + (this.symbol ? '' : '[?]') + '{' + source + '}';
+    }
+}
+;
 Object.defineProperties(SymbolToken.prototype, { // default properties
-  symbol: { value: undefined, enumerable: true } // no symbol token
+    symbol: {value: undefined, enumerable: true} // no symbol token
 });
 Object.defineProperties(SymbolToken.prototype, { // make getters and setters enumerable
-  pattern: { enumerable: true }
+    pattern: {enumerable: true}
 });
-
 
 
 /**
@@ -234,8 +234,8 @@ Object.defineProperties(SymbolToken.prototype, { // make getters and setters enu
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface ParameterTokenProperties extends TokenProperties {
-  hasBrackets: boolean;
-  hasSpacePrefix: boolean;
+    hasBrackets: boolean;
+    hasSpacePrefix: boolean;
 }
 
 
@@ -251,78 +251,78 @@ export interface ParameterTokenProperties extends TokenProperties {
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class ParameterToken extends Token {
-  public parentNode: SymbolToken;
+    public parentNode: SymbolToken;
 
-  private hasBrackets: boolean;
-  hasSpacePrefix: boolean;
+    private hasBrackets: boolean;
+    hasSpacePrefix: boolean;
 
-  /**
-   * Constructor
-   * @param {!ParameterTokenProperties} initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(initialProperties: ParameterTokenProperties) {
-    if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    super(initialProperties); // the superclass constructor
-    if (!initialProperties.hasBrackets) // if there are no bounding brackets
-      // store this fact
-      Object.defineProperty(this, 'hasBrackets', { value: false, enumerable: true });
-    if (initialProperties.hasSpacePrefix) // if there is a space before
-      // store this fact
-      Object.defineProperty(this, 'hasSpacePrefix', { value: true, enumerable: true });
-  }
-
-
-  /**
-   * Get the logical lexeme
-   * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get lexeme (): Lexeme | undefined {
-    if(this.parameter && this.parameter.lexeme) return this.parameter.lexeme;
-  }
+    /**
+     * Constructor
+     * @param {!ParameterTokenProperties} initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(initialProperties: ParameterTokenProperties) {
+        if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        super(initialProperties); // the superclass constructor
+        if (!initialProperties.hasBrackets) // if there are no bounding brackets
+        // store this fact
+            Object.defineProperty(this, 'hasBrackets', {value: false, enumerable: true});
+        if (initialProperties.hasSpacePrefix) // if there is a space before
+        // store this fact
+            Object.defineProperty(this, 'hasSpacePrefix', {value: true, enumerable: true});
+    }
 
 
-  /**
-   * Get the corresponding LaTeX parameter description
-   * @return {?LatexStyle.Parameter}
-   *         the LaTeX parameter or undefined of there is parent symbol or such a parameter
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get parameter (): Parameter | undefined {
-    /** @type {?SymbolToken} */
-    let symbolToken = this.parentNode; // get the symbol token
-    let symbol = mustNotBeUndefined(symbolToken.symbol);
-    let parameterIndex = symbolToken.childIndex(this);
-    if(symbolToken !== undefined && parameterIndex !== undefined && parameterIndex >= 0)
-      return symbol.parameter(parameterIndex);
-  }
+    /**
+     * Get the logical lexeme
+     * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get lexeme(): Lexeme | undefined {
+        if (this.parameter && this.parameter.lexeme) return this.parameter.lexeme;
+    }
 
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-    let source = this.hasSpacePrefix ? ' ' : '';
-    source += this.hasBrackets ? '{' + super.toString(true) + '}' : super.toString(true);
-    return skipNodeClass ? source : 'ParameterToken{' + source + '}';
-  }
-};
+    /**
+     * Get the corresponding LaTeX parameter description
+     * @return {?LatexStyle.Parameter}
+     *         the LaTeX parameter or undefined of there is parent symbol or such a parameter
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get parameter(): Parameter | undefined {
+        /** @type {?SymbolToken} */
+        let symbolToken = this.parentNode; // get the symbol token
+        let symbol = mustNotBeUndefined(symbolToken.symbol);
+        let parameterIndex = symbolToken.childIndex(this);
+        if (symbolToken !== undefined && parameterIndex !== undefined && parameterIndex >= 0)
+            return symbol.parameter(parameterIndex);
+    }
+
+
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        let source = this.hasSpacePrefix ? ' ' : '';
+        source += this.hasBrackets ? '{' + super.toString(true) + '}' : super.toString(true);
+        return skipNodeClass ? source : 'ParameterToken{' + source + '}';
+    }
+}
+;
 Object.defineProperties(ParameterToken.prototype, { // default properties
-  hasBrackets: { value: true, enumerable: true }, // there are bounding brackets
-  hasSpacePrefix: { value: false, enumerable: true }, // there is no space before
-  parentNodeClass_: { value: SymbolToken } // parent node must be a SymbolToken instance
+    hasBrackets: {value: true, enumerable: true}, // there are bounding brackets
+    hasSpacePrefix: {value: false, enumerable: true}, // there is no space before
+    parentNodeClass_: {value: SymbolToken} // parent node must be a SymbolToken instance
 });
 Object.defineProperties(ParameterToken.prototype, { // make getters and setters enumerable
-  parameter: { enumerable: true }
+    parameter: {enumerable: true}
 });
-
 
 
 /**
@@ -335,8 +335,8 @@ Object.defineProperties(ParameterToken.prototype, { // make getters and setters 
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface CommandTokenProperties extends TokenProperties {
-  command?: Command;
-  name?: string;
+    command?: Command;
+    name?: string;
 }
 
 
@@ -351,70 +351,75 @@ export interface CommandTokenProperties extends TokenProperties {
  */
 export class CommandToken extends SymbolToken {
 
-  /**
-   * Constructor
-   * @param {!CommandTokenProperties} initialProperties the initial property values
-   */
-  constructor(initialProperties: CommandTokenProperties) {
-    if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    // copy the initial properties for the superclass
-    let superInitialProperties = Object.create(initialProperties);
-    if (initialProperties.command) { // if the command is defined
-      if (!(initialProperties.command instanceof Command))
-        throw new TypeError('"initialProperties.command" isn\'t a LatexStyle.Command instance');
-      // the command is the symbol for the superclass
-      superInitialProperties.symbol = initialProperties.command;
-      super(superInitialProperties); // the superclass constructor
-    } else { // if the command isn't defined
-      if (typeof initialProperties.name !== 'string')
-        throw new TypeError('"initialProperties.name" isn\'t a string');
-      superInitialProperties.pattern = '';
-      super(superInitialProperties); // the superclass constructor
-      // store the unrecognized name
-      Object.defineProperty(this, 'name', { value: initialProperties.name });
+    /**
+     * Constructor
+     * @param {!CommandTokenProperties} initialProperties the initial property values
+     */
+    constructor(initialProperties: CommandTokenProperties) {
+        if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        // copy the initial properties for the superclass
+        let superInitialProperties = Object.create(initialProperties);
+        if (initialProperties.command) { // if the command is defined
+            if (!(initialProperties.command instanceof Command))
+                throw new TypeError('"initialProperties.command" isn\'t a LatexStyle.Command instance');
+            // the command is the symbol for the superclass
+            superInitialProperties.symbol = initialProperties.command;
+            super(superInitialProperties); // the superclass constructor
+        } else { // if the command isn't defined
+            if (typeof initialProperties.name !== 'string')
+                throw new TypeError('"initialProperties.name" isn\'t a string');
+            superInitialProperties.pattern = '';
+            super(superInitialProperties); // the superclass constructor
+            // store the unrecognized name
+            Object.defineProperty(this, 'name', {value: initialProperties.name});
+        }
     }
-  }
 
 
-  /**
-   * Get the LaTeX command
-   * @return {!LatexStyle.Command} the command description
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get command (): Command { return mustBeCommand(this.symbol) }
+    /**
+     * Get the LaTeX command
+     * @return {!LatexStyle.Command} the command description
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get command(): Command {
+        return mustBeCommand(this.symbol)
+    }
 
 
-  /**
-   * Get the LaTeX command name
-   * @return {string} the command name
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get name (): string { return this.command.name }
+    /**
+     * Get the LaTeX command name
+     * @return {string} the command name
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get name(): string {
+        return this.command.name
+    }
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-   let source = '\\' + this.name + super.toString(true);
-   return skipNodeClass ?
-     source :
-     'CommandToken' + (this.command ? '' : '[?]') + '{' + source + '}';
-  }
-};
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        let source = '\\' + this.name + super.toString(true);
+        return skipNodeClass ?
+            source :
+            'CommandToken' + (this.command ? '' : '[?]') + '{' + source + '}';
+    }
+}
+;
 
 Object.defineProperties(CommandToken.prototype, { // make getters and setters enumerable
-  command: { enumerable: true },
-  name: {enumerable: true }
+    command: {enumerable: true},
+    name: {enumerable: true}
 });
 
 export function isCommandToken(x: any): x is CommandToken {
-  return x && x instanceof CommandToken;
+    return x && x instanceof CommandToken;
 }
 
 
@@ -428,21 +433,21 @@ export function isCommandToken(x: any): x is CommandToken {
  */
 
 export interface EnvironmentTokenPropertiesWithEnvironment
-  extends EnvironmentTokenProperties {
-  environment: Environment;
-  name: undefined;
+    extends EnvironmentTokenProperties {
+    environment: Environment;
+    name: undefined;
 }
 
 export interface EnvironmentTokenPropertiesWithName
-  extends EnvironmentTokenProperties {
-  environment: undefined;
-  name: string;
+    extends EnvironmentTokenProperties {
+    environment: undefined;
+    name: string;
 }
 
 export interface EnvironmentTokenProperties
-  extends TokenProperties {
-  environment?: Environment;
-  name?: string;
+    extends TokenProperties {
+    environment?: Environment;
+    name?: string;
 }
 
 /**
@@ -459,120 +464,122 @@ export interface EnvironmentTokenProperties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class EnvironmentToken extends Token {
-  environment: Environment;
+    environment: Environment;
 
-  /**
-   * Constructor
-   * @param {!EnvironmentTokenProperties} initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(initialProperties: EnvironmentTokenProperties) {
-    if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    super(initialProperties); // the superclass constructor
-    if (!(initialProperties.environment instanceof Environment))
-      throw new TypeError(
-        '"initialProperties.environment" isn\'t a LatexStyle.Environment instance');
-    // store the environment
-    Object.defineProperty(this, 'environment', {
-      value: initialProperties.environment,
-      enumerable: true
-    });
-  }
-
-
-  /**
-   * Get the logical lexeme
-   * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get lexeme () { return this.environment.lexeme }
+    /**
+     * Constructor
+     * @param {!EnvironmentTokenProperties} initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(initialProperties: EnvironmentTokenProperties) {
+        if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        super(initialProperties); // the superclass constructor
+        if (!(initialProperties.environment instanceof Environment))
+            throw new TypeError(
+                '"initialProperties.environment" isn\'t a LatexStyle.Environment instance');
+        // store the environment
+        Object.defineProperty(this, 'environment', {
+            value: initialProperties.environment,
+            enumerable: true
+        });
+    }
 
 
-  /**
-   * Get the begin command token
-   * @return {?CommandToken} the command token or undefined if there is no begin command
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get beginCommandToken () {
-    let beginCommandToken = this.childNode(0);
-    return beginCommandToken instanceof CommandToken ? beginCommandToken : undefined;
-  }
+    /**
+     * Get the logical lexeme
+     * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get lexeme() {
+        return this.environment.lexeme
+    }
 
 
-  /**
-   * Get the end command token
-   * @return {?CommandToken} the command token or undefined if there is no end command
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get endCommandToken () {
-    let endCommandToken = this.childNode(2);
-    return endCommandToken instanceof CommandToken ? endCommandToken : undefined;
-  }
+    /**
+     * Get the begin command token
+     * @return {?CommandToken} the command token or undefined if there is no begin command
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get beginCommandToken() {
+        let beginCommandToken = this.childNode(0);
+        return beginCommandToken instanceof CommandToken ? beginCommandToken : undefined;
+    }
 
 
+    /**
+     * Get the end command token
+     * @return {?CommandToken} the command token or undefined if there is no end command
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get endCommandToken() {
+        let endCommandToken = this.childNode(2);
+        return endCommandToken instanceof CommandToken ? endCommandToken : undefined;
+    }
 
-  /**
-   * Get the environment body token
-   * @return {?EnvironmentBodyToken} the body or undefined if there is no body
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get bodyToken () {
-    let bodyToken = this.childNode(1);
-    return bodyToken instanceof EnvironmentBodyToken ? bodyToken : undefined;
-  }
+
+    /**
+     * Get the environment body token
+     * @return {?EnvironmentBodyToken} the body or undefined if there is no body
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get bodyToken() {
+        let bodyToken = this.childNode(1);
+        return bodyToken instanceof EnvironmentBodyToken ? bodyToken : undefined;
+    }
 
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass:boolean=false) {
-    let beginCommandToken = this.beginCommandToken; // the begin command token
-    let endCommandToken = this.endCommandToken; // the end command token
-    let bodyToken = this.bodyToken; // the environment body token
-    let source = '\\begin{' + this.environment.name + '}';
-    source += beginCommandToken ?
-      SymbolToken.prototype.toString.call(beginCommandToken, true) :
-      '??';
-    source += bodyToken ? bodyToken.toString(true) : '??';
-    source += '\\end{' + this.environment.name + '}';
-    source += endCommandToken ? SymbolToken.prototype.toString.call(endCommandToken, true) : '??';
-    return skipNodeClass ? source : 'EnvironmentToken{' + source + '}';
-  }
-};
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        let beginCommandToken = this.beginCommandToken; // the begin command token
+        let endCommandToken = this.endCommandToken; // the end command token
+        let bodyToken = this.bodyToken; // the environment body token
+        let source = '\\begin{' + this.environment.name + '}';
+        source += beginCommandToken ?
+            SymbolToken.prototype.toString.call(beginCommandToken, true) :
+            '??';
+        source += bodyToken ? bodyToken.toString(true) : '??';
+        source += '\\end{' + this.environment.name + '}';
+        source += endCommandToken ? SymbolToken.prototype.toString.call(endCommandToken, true) : '??';
+        return skipNodeClass ? source : 'EnvironmentToken{' + source + '}';
+    }
+}
+;
 Object.defineProperties(EnvironmentToken.prototype, { // make getters and setters enumerable
-  beginToken: { enumerable: true },
-  endToken: { enumerable: true }
+    beginToken: {enumerable: true},
+    endToken: {enumerable: true}
 });
 
 export function mustBeEnvironmentToken(x: any): EnvironmentToken {
-  if(!isEnvironmentToken(x)) throw new Error();
-  return x;
+    if (!isEnvironmentToken(x)) throw new Error();
+    return x;
 }
 
 export function isEnvironmentToken(x: any): x is EnvironmentToken {
-  return x instanceof EnvironmentToken;
+    return x instanceof EnvironmentToken;
 }
 
 
 function getBeginCommandToken(x: any): CommandToken | undefined {
-  if(isCommandToken(x.beginCommandToken))
-    return x.beginCommandToken;
+    if (isCommandToken(x.beginCommandToken))
+        return x.beginCommandToken;
 }
 
 function getEndCommandToken(x: any): CommandToken | undefined {
-  if(isCommandToken(x.endCommandToken))
-    return x.endCommandToken;
+    if (isCommandToken(x.endCommandToken))
+        return x.endCommandToken;
 }
 
 function getEnvironment(x: any): Environment | undefined {
-  if(x.environment && isEnvironment(x.environment))
-    return x.environment;
+    if (x.environment && isEnvironment(x.environment))
+        return x.environment;
 }
 
 /**
@@ -590,60 +597,65 @@ function getEnvironment(x: any): Environment | undefined {
  */
 export class EnvironmentBodyToken extends Token {
 
-  /**
-   * Get the LaTeX environment
-   * @return {?LatexStyle.Environment} the environment or undefined if there is no parent environment
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get environment (): Environment | undefined { return this.parentNode && getEnvironment(this.parentNode) }
+    /**
+     * Get the LaTeX environment
+     * @return {?LatexStyle.Environment} the environment or undefined if there is no parent environment
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get environment(): Environment | undefined {
+        return this.parentNode && getEnvironment(this.parentNode)
+    }
 
 
-
-  //noinspection JSUnusedGlobalSymbols
-  /**
-   * Get the parent environment token
-   * @return {?EnvironmentToken} the environment or undefined if there is no parent environment
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get environmentToken (): EnvironmentToken | undefined { return this.parentNode && mustBeEnvironmentToken(this.parentNode); }
-
-
-
-  /**
-   * Get the environment begin command token
-   * @return {?CommandToken} the command token or undefined if there is no begin command
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get beginCommandToken () { return this.parentNode && getBeginCommandToken(this.parentNode) }
+    //noinspection JSUnusedGlobalSymbols
+    /**
+     * Get the parent environment token
+     * @return {?EnvironmentToken} the environment or undefined if there is no parent environment
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get environmentToken(): EnvironmentToken | undefined {
+        return this.parentNode && mustBeEnvironmentToken(this.parentNode);
+    }
 
 
+    /**
+     * Get the environment begin command token
+     * @return {?CommandToken} the command token or undefined if there is no begin command
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get beginCommandToken() {
+        return this.parentNode && getBeginCommandToken(this.parentNode)
+    }
 
-  /**
-   * Get the environment end command token
-   * @return {(CommandToken|undefined)} the command token or undefined if there is no end command
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get endCommandToken () { return this.parentNode && getEndCommandToken(this.parentNode) }
+
+    /**
+     * Get the environment end command token
+     * @return {(CommandToken|undefined)} the command token or undefined if there is no end command
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get endCommandToken() {
+        return this.parentNode && getEndCommandToken(this.parentNode)
+    }
 
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-    return skipNodeClass ?
-      super.toString(true) :
-      'EnvironmentBodyToken{' + super.toString(true) + '}';
-  }
-};
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        return skipNodeClass ?
+            super.toString(true) :
+            'EnvironmentBodyToken{' + super.toString(true) + '}';
+    }
+}
+;
 Object.defineProperties(EnvironmentBodyToken.prototype, { // default properties
-  parentNodeClass_: { value: EnvironmentToken } // parent node must be an EnvironmentToken instance
+    parentNodeClass_: {value: EnvironmentToken} // parent node must be an EnvironmentToken instance
 });
-
 
 
 /**
@@ -654,8 +666,8 @@ Object.defineProperties(EnvironmentBodyToken.prototype, { // default properties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface SpaceTokenProperties
-  extends TokenProperties {
-  lineBreakCount?: number;
+    extends TokenProperties {
+    lineBreakCount?: number;
 }
 
 /**
@@ -666,79 +678,79 @@ export interface SpaceTokenProperties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class SpaceToken extends Token {
-  lineBreakCount: number;
+    lineBreakCount: number;
 
 
-  /**
-   * Constructor
-   * @param {!SpaceTokenProperties} initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(initialProperties: SpaceTokenProperties) {
-    if (initialProperties === undefined) {
-      super();
-      return;
+    /**
+     * Constructor
+     * @param {!SpaceTokenProperties} initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(initialProperties: SpaceTokenProperties) {
+        if (initialProperties === undefined) {
+            super();
+            return;
+        }
+        else if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        super(initialProperties); // the superclass constructor
+        if (initialProperties.lineBreakCount) { // if the line break number is defined
+            if (!isFinite(initialProperties.lineBreakCount) || initialProperties.lineBreakCount < 0)
+                throw new TypeError('"initialProperties.lineBreakCount" isn\'t a non-negative number');
+            // store the line break number
+            Object.defineProperty(this, 'lineBreakCount', {
+                value: initialProperties.lineBreakCount,
+                enumerable: true
+            });
+        }
     }
-    else if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    super(initialProperties); // the superclass constructor
-    if (initialProperties.lineBreakCount) { // if the line break number is defined
-      if (!isFinite(initialProperties.lineBreakCount) || initialProperties.lineBreakCount < 0)
-        throw new TypeError('"initialProperties.lineBreakCount" isn\'t a non-negative number');
-      // store the line break number
-      Object.defineProperty(this, 'lineBreakCount', {
-        value: initialProperties.lineBreakCount,
-        enumerable: true
-      });
+
+
+    /**
+     * Get the logical lexeme
+     * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    get lexeme(): Lexeme {
+        return this.lineBreakCount <= 1 ? "SPACE" : "PARAGRAPH_SEPARATOR";
     }
-  }
 
 
-  /**
-   * Get the logical lexeme
-   * @return {(Lexeme|undefined)} the lexeme or undefined if the lexeme isn't defined
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  get lexeme (): Lexeme {
-    return this.lineBreakCount <= 1 ? "SPACE" : "PARAGRAPH_SEPARATOR";
-  }
-
-
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false): string {
-    if (skipNodeClass) { // if the node class name must be skipped
-      switch (this.lineBreakCount) {
-      case 0:
-        return ' ';
-      case 1:
-        return '\n';
-      default:
-        return '\n\n';
-      }
-    } else { // if the node class name must be included
-      switch (this.lineBreakCount) {
-      case 0:
-        return 'SpaceToken{ }';
-      case 1:
-        return 'SpaceToken{\n}';
-      default:
-        return 'SpaceToken{\n\n}';
-      }
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false): string {
+        if (skipNodeClass) { // if the node class name must be skipped
+            switch (this.lineBreakCount) {
+                case 0:
+                    return ' ';
+                case 1:
+                    return '\n';
+                default:
+                    return '\n\n';
+            }
+        } else { // if the node class name must be included
+            switch (this.lineBreakCount) {
+                case 0:
+                    return 'SpaceToken{ }';
+                case 1:
+                    return 'SpaceToken{\n}';
+                default:
+                    return 'SpaceToken{\n\n}';
+            }
+        }
     }
-  }
-};
+}
+;
 
 Object.defineProperties(SpaceToken.prototype, { // default properties
-  lineBreakCount: { value: 0, enumerable: true } // line break number
+    lineBreakCount: {value: 0, enumerable: true} // line break number
 });
-
 
 
 /**
@@ -750,9 +762,9 @@ Object.defineProperties(SpaceToken.prototype, { // default properties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface SourceTokenProperties
-  extends TokenProperties {
-  lexeme: Lexeme;
-  source: string;
+    extends TokenProperties {
+    lexeme: Lexeme;
+    source: string;
 }
 
 /**
@@ -763,39 +775,40 @@ export interface SourceTokenProperties
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class SourceToken extends Token {
-  private source: string;
+    private source: string;
 
-  /**
-   * Constructor
-   * @param {!SourceTokenProperties} initialProperties the initial property values
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  constructor(initialProperties: SourceTokenProperties) {
-    if (!(initialProperties instanceof Object))
-      throw new TypeError ('"initialProperties" isn\'t an Object instance');
-    super(initialProperties); // the superclass constructor
-    if (!Lexeme[initialProperties.lexeme])
-      throw new TypeError('"initialProperties.lexeme" isn\'t known');
-    // store the lexeme
-    Object.defineProperty(this, 'lexeme', { value: initialProperties.lexeme, enumerable: true });
-    if (typeof initialProperties.source !== 'string')
-      throw new TypeError('"initialProperties.sources" isn\'t a string');
-    // store the sources
-    Object.defineProperty(this, 'source', { value: initialProperties.source, enumerable: true });
-  }
+    /**
+     * Constructor
+     * @param {!SourceTokenProperties} initialProperties the initial property values
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    constructor(initialProperties: SourceTokenProperties) {
+        if (!(initialProperties instanceof Object))
+            throw new TypeError('"initialProperties" isn\'t an Object instance');
+        super(initialProperties); // the superclass constructor
+        if (!Lexeme[initialProperties.lexeme])
+            throw new TypeError('"initialProperties.lexeme" isn\'t known');
+        // store the lexeme
+        Object.defineProperty(this, 'lexeme', {value: initialProperties.lexeme, enumerable: true});
+        if (typeof initialProperties.source !== 'string')
+            throw new TypeError('"initialProperties.sources" isn\'t a string');
+        // store the sources
+        Object.defineProperty(this, 'source', {value: initialProperties.source, enumerable: true});
+    }
 
 
-  /**
-   * Get the string representation of this node
-   * @param {boolean=false} skipNodeClass
-   *        true to not include the node class name into the output, false otherwise
-   * @return {string} the sources string
-   * @override
-   * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-   */
-  toString(skipNodeClass: boolean = false) {
-    return skipNodeClass ? this.source : 'SourceToken[' + this.lexeme + ']{' + this.source + '}';
-  }
-};
+    /**
+     * Get the string representation of this node
+     * @param {boolean=false} skipNodeClass
+     *        true to not include the node class name into the output, false otherwise
+     * @return {string} the sources string
+     * @override
+     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
+     */
+    toString(skipNodeClass: boolean = false) {
+        return skipNodeClass ? this.source : 'SourceToken[' + this.lexeme + ']{' + this.source + '}';
+    }
+}
+;
 
 export default SyntaxTree;

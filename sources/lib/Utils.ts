@@ -18,7 +18,7 @@
  * 02111-1307, USA.
  */
 
-export type StringMap = {[s:string]:string};
+export type StringMap = { [s: string]: string };
 
 export type TargetObject = any;
 export type ValuesObject = any;
@@ -26,9 +26,9 @@ export type ValuesObject = any;
 export type OptKeys = StringMap | string[];
 
 export interface OptAttributes {
-  writable: boolean;
-  enumerable: boolean;
-  configurable: boolean;
+    writable: boolean;
+    enumerable: boolean;
+    configurable: boolean;
 }
 /**
  * Update object properties by property values
@@ -44,46 +44,52 @@ export interface OptAttributes {
 export function updateProperties(target: TargetObject,
                                  values: ValuesObject,
                                  opt_keys?: OptKeys,
-                                 opt_attributes: OptAttributes = { writable: true, enumerable: true, configurable: true }) {
-  if (!(target instanceof Object)) throw new TypeError('"target" isn\'t an Object instance');
-  if (values === undefined) return; // do noting is the sources is undefined
-  if (!(values instanceof Object)) throw new TypeError('"properties" isn\'t an Object instance');
-  if (opt_attributes === undefined) {
-    opt_attributes = { writable: true, enumerable: true, configurable: true };
-  } else if (!(opt_attributes instanceof Object)) {
-    throw new TypeError('"attributes" isn\'t an Object instance')
-  }
-  if (opt_keys === undefined) { // if the key map isn't defined
-    for (let key in values) { // for all the enumerable properties
-      //noinspection JSUnfilteredForInLoop
-      if (values[key] !== undefined) {
-        //noinspection JSUnfilteredForInLoop
-        Object.defineProperty(target, key, // update the property
-          // using the defined value
-          Object.create(opt_attributes, { value: { value: values[key] } })
-        );
-      }
+                                 opt_attributes: OptAttributes = {
+                                     writable: true,
+                                     enumerable: true,
+                                     configurable: true
+                                 }) {
+    if (!(target instanceof Object)) throw new TypeError('"target" isn\'t an Object instance');
+    if (values === undefined) return; // do noting is the sources is undefined
+    if (!(values instanceof Object)) throw new TypeError('"properties" isn\'t an Object instance');
+    if (opt_attributes === undefined) {
+        opt_attributes = {writable: true, enumerable: true, configurable: true};
+    } else if (!(opt_attributes instanceof Object)) {
+        throw new TypeError('"attributes" isn\'t an Object instance')
     }
-  } else if (opt_keys instanceof Array) { // if the list of the keys is defined
-    opt_keys.forEach(key => { if (values[key] !== undefined) {
-      Object.defineProperty(target, key, // update the property
-        Object.create(opt_attributes, {value: {value: values[key]}}) // using the defined value
-      );
-    }});
-  } else if (opt_keys instanceof Object) { // if the map of the keys is defined
-    for (let targetKey in opt_keys) { // for all the target keys
-      //noinspection JSUnfilteredForInLoop
-      let key = opt_keys[targetKey]; // the sources key
-      if (values[key] !== undefined)
-        //noinspection JSUnfilteredForInLoop
-        Object.defineProperty(target, targetKey, // update the property
-          // using the defined value
-          Object.create(opt_attributes, { value: { value: values[key] } })
-        );
+    if (opt_keys === undefined) { // if the key map isn't defined
+        for (let key in values) { // for all the enumerable properties
+            //noinspection JSUnfilteredForInLoop
+            if (values[key] !== undefined) {
+                //noinspection JSUnfilteredForInLoop
+                Object.defineProperty(target, key, // update the property
+                    // using the defined value
+                    Object.create(opt_attributes, {value: {value: values[key]}})
+                );
+            }
+        }
+    } else if (opt_keys instanceof Array) { // if the list of the keys is defined
+        opt_keys.forEach(key => {
+            if (values[key] !== undefined) {
+                Object.defineProperty(target, key, // update the property
+                    Object.create(opt_attributes, {value: {value: values[key]}}) // using the defined value
+                );
+            }
+        });
+    } else if (opt_keys instanceof Object) { // if the map of the keys is defined
+        for (let targetKey in opt_keys) { // for all the target keys
+            //noinspection JSUnfilteredForInLoop
+            let key = opt_keys[targetKey]; // the sources key
+            if (values[key] !== undefined)
+            //noinspection JSUnfilteredForInLoop
+                Object.defineProperty(target, targetKey, // update the property
+                    // using the defined value
+                    Object.create(opt_attributes, {value: {value: values[key]}})
+                );
+        }
+    } else { // if "keys" has unsupported value
+        throw new TypeError('"keys" isn\'t an Object instance');
     }
-  } else { // if "keys" has unsupported value
-    throw new TypeError('"keys" isn\'t an Object instance');
-  }
 };
 
 
@@ -102,42 +108,42 @@ export function testProperties(target: TargetObject,
                                values?: ValuesObject,
                                opt_keys?: OptKeys,
                                opt_skipUndefined: boolean = true) {
-  if (!(target instanceof Object)) throw new TypeError('"target" isn\'t an Object instance');
-  if (values === undefined) return true; // do noting is the sources is undefined
-  if (!(values instanceof Object)) throw new TypeError('"properties" isn\'t an Object instance');
-  if (opt_skipUndefined === undefined) opt_skipUndefined = true; // skip undefined by default
+    if (!(target instanceof Object)) throw new TypeError('"target" isn\'t an Object instance');
+    if (values === undefined) return true; // do noting is the sources is undefined
+    if (!(values instanceof Object)) throw new TypeError('"properties" isn\'t an Object instance');
+    if (opt_skipUndefined === undefined) opt_skipUndefined = true; // skip undefined by default
 
-  if (opt_keys === undefined) { // if the key map isn't defined
-    for (let key in values) { // for all the enumerable properties
-      if (target[key] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
-        return false; // false if any value is different
+    if (opt_keys === undefined) { // if the key map isn't defined
+        for (let key in values) { // for all the enumerable properties
+            if (target[key] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
+                return false; // false if any value is different
+        }
+    } else if (opt_keys instanceof Array) { // if the list of the keys is defined
+        return opt_keys.every(key => {
+            return target[key] === values[key] || (values[key] === undefined && opt_skipUndefined);
+        });
+    } else if (opt_keys instanceof Object) { // if the map of the keys is defined
+        for (let targetKey in opt_keys) { // for all the target keys
+            let key = opt_keys[targetKey]; // the sources key
+            if (target[targetKey] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
+                return false; // false if any value is different
+        }
+    } else { // if "keys" has unsupported value
+        throw new TypeError('"keys" isn\'t an Object instance');
     }
-  } else if (opt_keys instanceof Array) { // if the list of the keys is defined
-    return opt_keys.every(key => {
-      return target[key] === values[key] || (values[key] === undefined && opt_skipUndefined);
-    });
-  } else if (opt_keys instanceof Object) { // if the map of the keys is defined
-    for (let targetKey in opt_keys) { // for all the target keys
-      let key = opt_keys[targetKey]; // the sources key
-      if (target[targetKey] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
-        return false; // false if any value is different
-    }
-  } else { // if "keys" has unsupported value
-    throw new TypeError('"keys" isn\'t an Object instance');
-  }
-  return true; // return true if all the defined properties are the same
+    return true; // return true if all the defined properties are the same
 };
 
 
 export function isNumber(x: any): x is number {
-  return typeof x === "number"
+    return typeof x === "number"
 }
 
 export function isString(x: any): x is string {
-  return typeof x === "string"
+    return typeof x === "string"
 }
 
 export function mustNotBeUndefined<T>(x?: T): T {
-  if(!x) throw new Error();
-  return x;
+    if (!x) throw new Error();
+    return x;
 }
