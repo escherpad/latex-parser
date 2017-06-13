@@ -55,10 +55,10 @@ export function updateProperties(target: TargetObject,
     if (opt_attributes === undefined) {
         opt_attributes = {writable: true, enumerable: true, configurable: true};
     } else if (!(opt_attributes instanceof Object)) {
-        throw new TypeError('"attributes" isn\'t an Object instance')
+        throw new TypeError('"attributes" isn\'t an Object instance');
     }
     if (opt_keys === undefined) { // if the key map isn't defined
-        for (let key in values) { // for all the enumerable properties
+        for (const key in values) { // for all the enumerable properties
             //noinspection JSUnfilteredForInLoop
             if (values[key] !== undefined) {
                 //noinspection JSUnfilteredForInLoop
@@ -77,9 +77,9 @@ export function updateProperties(target: TargetObject,
             }
         });
     } else if (opt_keys instanceof Object) { // if the map of the keys is defined
-        for (let targetKey in opt_keys) { // for all the target keys
+        for (const targetKey in opt_keys) { // for all the target keys
             //noinspection JSUnfilteredForInLoop
-            let key = opt_keys[targetKey]; // the sources key
+            const key = opt_keys[targetKey]; // the sources key
             if (values[key] !== undefined)
             //noinspection JSUnfilteredForInLoop
                 Object.defineProperty(target, targetKey, // update the property
@@ -90,7 +90,7 @@ export function updateProperties(target: TargetObject,
     } else { // if "keys" has unsupported value
         throw new TypeError('"keys" isn\'t an Object instance');
     }
-};
+}
 
 
 /**
@@ -107,15 +107,19 @@ export function updateProperties(target: TargetObject,
 export function testProperties(target: TargetObject,
                                values?: ValuesObject,
                                opt_keys?: OptKeys,
-                               opt_skipUndefined: boolean = true) {
+                               opt_skipUndefined = true) {
     if (!(target instanceof Object)) throw new TypeError('"target" isn\'t an Object instance');
     if (values === undefined) return true; // do noting is the sources is undefined
     if (!(values instanceof Object)) throw new TypeError('"properties" isn\'t an Object instance');
     if (opt_skipUndefined === undefined) opt_skipUndefined = true; // skip undefined by default
 
     if (opt_keys === undefined) { // if the key map isn't defined
-        for (let key in values) { // for all the enumerable properties
-            if (target[key] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
+        for (const key in values) { // for all the enumerable properties
+            //noinspection JSUnfilteredForInLoop // TODO what to do?
+            if (
+                target[key] !== values[key]
+                && !(values[key] === undefined && opt_skipUndefined)
+            )
                 return false; // false if any value is different
         }
     } else if (opt_keys instanceof Array) { // if the list of the keys is defined
@@ -123,8 +127,8 @@ export function testProperties(target: TargetObject,
             return target[key] === values[key] || (values[key] === undefined && opt_skipUndefined);
         });
     } else if (opt_keys instanceof Object) { // if the map of the keys is defined
-        for (let targetKey in opt_keys) { // for all the target keys
-            let key = opt_keys[targetKey]; // the sources key
+        for (const targetKey in opt_keys) { // for all the target keys
+            const key = opt_keys[targetKey]; // the sources key
             if (target[targetKey] !== values[key] && !(values[key] === undefined && opt_skipUndefined))
                 return false; // false if any value is different
         }
@@ -132,15 +136,15 @@ export function testProperties(target: TargetObject,
         throw new TypeError('"keys" isn\'t an Object instance');
     }
     return true; // return true if all the defined properties are the same
-};
+}
 
 
 export function isNumber(x: any): x is number {
-    return typeof x === "number"
+    return typeof x === "number";
 }
 
 export function isString(x: any): x is string {
-    return typeof x === "string"
+    return typeof x === "string";
 }
 
 export function mustNotBeUndefined<T>(x?: T): T {

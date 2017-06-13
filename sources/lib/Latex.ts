@@ -18,7 +18,7 @@
  * 02111-1307, USA.
  */
 
-'use strict';
+"use strict";
 
 /**@module */
 
@@ -29,39 +29,39 @@
  * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export const Lexeme = {
-    BINARY_OPERATOR: 'BINARY_OPERATOR',     // mathematical binary operator
-    BRACKETS: 'BRACKETS',            // logical brackets
-    CELL_SEPARATOR: 'CELL_SEPARATOR',      // table cell separator
-    CHAR: 'CHAR',                // character
-    DIGIT: 'DIGIT',               // digit
-    DIRECTIVE: 'DIRECTIVE',           // LaTeX directive
-    DISPLAY_EQUATION: 'DISPLAY_EQUATION',    // mathematical equation for display mode
-    FILE_PATH: 'FILE_PATH',           // file system path
-    FLOATING_BOX: 'FLOATING_BOX',        // floating box
-    HORIZONTAL_SKIP: 'HORIZONTAL_SKIP',     // any type of horizontal skip but not space
-    INLINE_EQUATION: 'INLINE_EQUATION',     // mathematical equation for inline mode
-    LABEL: 'LABEL',               // label identifier
-    LENGTH: 'LENGTH',              // linear dimension
-    LETTER: 'LETTER',              // word letter
-    LINE_BREAK: 'LINE_BREAK',          // text line break
-    LIST_ITEM: 'LIST_ITEM',           // list item
-    LIST: 'LIST',                // list of items
-    NUMBER: 'NUMBER',              // sequence of digits
-    PARAGRAPH_SEPARATOR: 'PARAGRAPH_SEPARATOR', // paragraph separator
-    PICTURE: 'PICTURE',             // picture
-    POST_OPERATOR: 'POST_OPERATOR',       // mathematical post-operator
-    PRE_OPERATOR: 'PRE_OPERATOR',        // mathematical pre-operator
-    RAW: 'RAW',                 // unprocessable or raw sources
-    SPACE: 'SPACE',               // any type of space equivalent
-    SUBSCRIPT: 'SUBSCRIPT',           // subscript text
-    SUPERSCRIPT: 'SUPERSCRIPT',         // subscript text
-    TABLE: 'TABLE',               // table
-    TABULAR_PARAMETERS: 'TABULAR_PARAMETERS',  // LaTeX tabular parameters
-    TAG: 'TAG',                 // formatting tag
-    UNKNOWN: 'UNKNOWN',             // unrecognized element
-    VERTICAL_SKIP: 'VERTICAL_SKIP',       // any type of vertical skip
-    WORD: 'WORD',                // sequence of letters
-    WRAPPER: 'WRAPPER'              // wrapper for something
+    CELL_SEPARATOR: "CELL_SEPARATOR",           // table cell separator
+    BRACKETS: "BRACKETS",                       // logical brackets
+    BINARY_OPERATOR: "BINARY_OPERATOR",         // mathematical binary operator
+    CHAR: "CHAR",                               // character
+    DIGIT: "DIGIT",                             // digit
+    DIRECTIVE: "DIRECTIVE",                     // LaTeX directive
+    DISPLAY_EQUATION: "DISPLAY_EQUATION",       // mathematical equation for display mode
+    FILE_PATH: "FILE_PATH",                     // file system path
+    FLOATING_BOX: "FLOATING_BOX",               // floating box
+    HORIZONTAL_SKIP: "HORIZONTAL_SKIP",         // any type of horizontal skip but not space
+    INLINE_EQUATION: "INLINE_EQUATION",         // mathematical equation for inline mode
+    LABEL: "LABEL",                             // label identifier
+    LENGTH: "LENGTH",                           // linear dimension
+    LETTER: "LETTER",                           // word letter
+    LINE_BREAK: "LINE_BREAK",                   // text line break
+    NUMBER: "NUMBER",                           // sequence of digits
+    LIST: "LIST",                               // list of items
+    LIST_ITEM: "LIST_ITEM",                     // list item
+    PARAGRAPH_SEPARATOR: "PARAGRAPH_SEPARATOR", // paragraph separator
+    PICTURE: "PICTURE",                         // picture
+    POST_OPERATOR: "POST_OPERATOR",             // mathematical post-operator
+    PRE_OPERATOR: "PRE_OPERATOR",               // mathematical pre-operator
+    RAW: "RAW",                                 // unprocessable or raw sources
+    SPACE: "SPACE",                             // any type of space equivalent
+    SUBSCRIPT: "SUBSCRIPT",                     // subscript text
+    SUPERSCRIPT: "SUPERSCRIPT",                 // subscript text
+    TABLE: "TABLE",                             // table
+    TABULAR_PARAMETERS: "TABULAR_PARAMETERS",   // LaTeX tabular parameters
+    TAG: "TAG",                                 // formatting tag
+    UNKNOWN: "UNKNOWN",                         // unrecognized element
+    VERTICAL_SKIP: "VERTICAL_SKIP",             // any type of vertical skip
+    WORD: "WORD",                               // sequence of letters
+    WRAPPER: "WRAPPER"                          // wrapper for something
 };
 export type Lexeme = keyof typeof Lexeme;
 
@@ -71,12 +71,12 @@ export type Lexeme = keyof typeof Lexeme;
  * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 export const modes = {
-    LIST: 'LIST',    // list of items
-    MATH: 'MATH',    // mathematical expressionLatex
-    PICTURE: 'PICTURE', // picture
-    TABLE: 'TABLE',   // LaTeX tabular
-    TEXT: 'TEXT',    // general text
-    VERTICAL: 'VERTICAL' // vertical spacing
+    LIST: "LIST",        // list of items
+    MATH: "MATH",        // mathematical expressionLatex
+    PICTURE: "PICTURE",  // picture
+    TABLE: "TABLE",      // LaTeX tabular
+    TEXT: "TEXT",        // general text
+    VERTICAL: "VERTICAL" // vertical spacing
 };
 
 export type Mode = keyof typeof modes;
@@ -107,7 +107,7 @@ export class State {
      * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     constructor(opt_initialModeStates: ModeStates = {}) {
-        Object.defineProperty(this, 'modeStates_', {value: {}, enumerable: false});
+        Object.defineProperty(this, "modeStates_", {value: {}, enumerable: false});
 
         this.modeStates_[modes.LIST] = false;
 
@@ -142,9 +142,9 @@ export class State {
      * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     update(modeStates: ModeStates) {
-        for (let modeKey in modeStates) { // for all the given modes
+        for (const modeKey in modeStates) { // for all the given modes
             //noinspection JSUnfilteredForInLoop
-            let mode = modes[mustBeMode(modeKey)]; // verify the mode key
+            const mode = modes[mustBeMode(modeKey)]; // verify the mode key
             if (mode === undefined) // if the mode is unknown
                 throw new TypeError('"modeStates[' + modeKey + ']" isn\'t a Latex.Mode option');
             //noinspection JSUnfilteredForInLoop,JSUnresolvedVariable
@@ -160,8 +160,8 @@ export class State {
      * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     test(modeStates: ModeStates) {
-        for (let modeKey in modeStates) { // for all the given modes
-            let mode = modes[mustBeMode(modeKey)]; // verify the mode key
+        for (const modeKey in modeStates) { // for all the given modes
+            const mode = modes[mustBeMode(modeKey)]; // verify the mode key
             if (mode === undefined) // if the mode is unknown
                 throw new TypeError('"modeStates[' + modeKey + ']" isn\'t a Latex.Mode option');
             // exit if the mode has different states
@@ -170,7 +170,6 @@ export class State {
         return true;
     }
 }
-;
 
 
 /**
@@ -179,8 +178,8 @@ export class State {
  * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 export const Directive = {
-    BEGIN: 'BEGIN', // begin something
-    END: 'END'    // end something
+    BEGIN: "BEGIN", // begin something
+    END: "END"    // end something
 };
 export type Directive = keyof typeof Directive;
 
@@ -190,8 +189,8 @@ export type Directive = keyof typeof Directive;
  * @const {string}
  * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
-export const GROUP = 'GROUP';
-export type GROUP = 'GROUP';
+export const GROUP = "GROUP";
+export type GROUP = "GROUP";
 
 
 /**
@@ -236,22 +235,22 @@ export class Operation {
         if (opt_initialProperties === undefined) return;
         if (!(opt_initialProperties instanceof Object))
             throw new TypeError('"initialProperties" isn\'t an Object instance');
-        let directive = Directive[opt_initialProperties.directive]; // validate the directive
+        const directive = Directive[opt_initialProperties.directive]; // validate the directive
         if (!directive)
             throw new TypeError('"initialProperties.directive" isn\'t an Latex.Directive option');
-        Object.defineProperty(this, 'directive', {value: directive, enumerable: true});
+        Object.defineProperty(this, "directive", {value: directive, enumerable: true});
         switch (opt_initialProperties.operand) {
             case GROUP: // if operand is a group
                 // store the operand
-                Object.defineProperty(this, 'operand', {value: GROUP, enumerable: true});
+                Object.defineProperty(this, "operand", {value: GROUP, enumerable: true});
                 break;
             default:
-                let mode = modes[opt_initialProperties.operand]; // validate the operand as a mode
+                const mode = modes[opt_initialProperties.operand]; // validate the operand as a mode
                 if (!mode) throw new TypeError('"initialProperties.operand" isn\'t an Latex.Mode option');
                 // store the operand
-                Object.defineProperty(this, 'operand', {value: mode, enumerable: true});
+                Object.defineProperty(this, "operand", {value: mode, enumerable: true});
         }
-    };
+    }
 
 
     /**
@@ -263,6 +262,5 @@ export class Operation {
     equals(other: any) {
         if (!(other instanceof Operation)) return false; // type test
         return this.directive === other.directive && this.operand === other.operand;
-    };
+    }
 }
-;

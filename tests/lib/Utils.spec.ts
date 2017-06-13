@@ -48,8 +48,8 @@ describe("updateProperties", () => {
     });
     it("incorrect keys", function () {
         expect(function () {
-            Utils.updateProperties({}, {}, undefined)
-        }, '').to.throw;
+            Utils.updateProperties({}, {}, undefined);
+        }, "").to.throw;
         // expect(function () { Utils.updateProperties({}, {}, 1) }, '').to.throw;
     });
     it("undefined keys", function () {
@@ -62,12 +62,12 @@ describe("updateProperties", () => {
     });
     it("array keys", function () {
         const target = {a: 1, b: 2};
-        Utils.updateProperties(target, {a: -1, c: 3, d: 4}, ['a', 'd']);
+        Utils.updateProperties(target, {a: -1, c: 3, d: 4}, ["a", "d"]);
         expect(target).to.deep.equal({a: -1, b: 2, d: 4});
     });
     it("object keys", function () {
         const target = {a: 1, b: 2};
-        Utils.updateProperties(target, {a: -1, c: 3, d: 4}, {b: 'a', c: 'c'});
+        Utils.updateProperties(target, {a: -1, c: 3, d: 4}, {b: "a", c: "c"});
         expect(target).to.deep.equal({a: 1, b: -1, c: 3});
     });
 });
@@ -85,8 +85,8 @@ describe("testProperties", () => {
     });
     it("incorrect properties", function () {
         expect(function () {
-            Utils.updateProperties({}, undefined)
-        }, '').to.throw;
+            Utils.updateProperties({}, undefined);
+        }, "").to.throw;
         // test.throws(function () { Utils.testProperties({}, 1) }, '');
     });
     it("undefined properties", function () {
@@ -95,8 +95,8 @@ describe("testProperties", () => {
     });
     it("incorrect keys", function () {
         expect(function () {
-            Utils.testProperties({}, {}, undefined)
-        }, '').to.throw;
+            Utils.testProperties({}, {}, undefined);
+        }, "").to.throw;
         // test.throws(function () { Utils.testProperties({}, {}, 1) }, '');
     });
     it("undefined keys", function () {
@@ -108,17 +108,17 @@ describe("testProperties", () => {
         expect(Utils.testProperties({a: 1, b: 2}, {b: 2, c: 3})).to.equal(false);
     });
     it("array keys", function () {
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ['a'])).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ['b'])).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ['a', 'c'])).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ['a'])).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ['b'])).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ['c'])).to.equal(false);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ['a', 'c'])).to.equal(false);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ["a"])).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ["b"])).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1}, ["a", "c"])).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ["a"])).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ["b"])).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ["c"])).to.equal(false);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 1, c: 3}, ["a", "c"])).to.equal(false);
     });
     it("object keys", function () {
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: 'c', b: 'a'})).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: 'c', b: 'a', c: 'b'})).to.equal(true);
-        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: 'c', b: 'a', c: 'd'})).to.equal(false);
-    })
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: "c", b: "a"})).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: "c", b: "a", c: "b"})).to.equal(true);
+        expect(Utils.testProperties({a: 1, b: 2}, {a: 2, c: 1, d: 4}, {a: "c", b: "a", c: "d"})).to.equal(false);
+    });
 });

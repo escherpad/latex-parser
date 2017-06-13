@@ -1,23 +1,26 @@
 {
   "name": "latex-parser",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "LaTeX parser",
   "keywords": [
     "LaTeX",
+    "TeX",
     "parser",
+    "typescript",
+    "javascript",
     "syntax tree",
     "ast"
   ],
   "homepage": "https://github.com/digitalheir/latex-parser",
   "bugs": {
     "url": "https://github.com/digitalheir/latex-parser/issues",
-    "email": "maartentrompper@gmail.com"
+    "email": "maartentrompper@freedom.nl"
   },
   "license": "LGPL-3.0",
   "author": {
-    "name": "TeXnous team",
-    "email": "team@texnous.org",
-    "url": "http://texnous.org"
+    "name": "Maarten Trompper",
+    "email": "maartentrompper@freedom.nl",
+    "url": "https://github.com/digitalheir"
   },
   "contributors": [
     {
@@ -32,6 +35,7 @@
   "main": "main.js",
   "types": "main.d.ts",
   "repository": "git@github.com:digitalheir/latex-parser.git",
+  "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
@@ -43,7 +47,8 @@
     "chai": "^4.0.2",
     "mocha": "^3.4.2",
     "ts-node": "^3.0.6",
-    "typescript": "^2.3.4",
+    "tslint": "^5.4.3",
+    "typescript": "^2.4.0",
     "webpack": "^2.6.1"
   },
   "scripts": {

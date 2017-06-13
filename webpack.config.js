@@ -1,19 +1,20 @@
 const webpack = require("webpack");
 const path = require("path");
 
-const libraryName = "latex-parser",
-  plugins = [
-    new webpack.LoaderOptionsPlugin({
-      options: {
-        tslint: {
-          emitErrors: true,
-          failOnHint: true
-        }
-      }
-    })
-  ];
+const libraryName = "latex-parser";
 
-let minifiedFileName = `${libraryName}.min.js`;
+const plugins = [
+  new webpack.LoaderOptionsPlugin({
+    options: {
+      tslint: {
+        emitErrors: true,
+        failOnHint: true
+      }
+    }
+  })
+];
+
+const minifiedFileName = `${libraryName}.min.js`;
 
 console.log(minifiedFileName);
 
@@ -51,6 +52,7 @@ const config = {
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx']
   },
+
   plugins: plugins
 };
 

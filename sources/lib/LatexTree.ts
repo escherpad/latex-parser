@@ -21,9 +21,9 @@
 /** @module */
 
 /** @external LatexStyle*/
-import {Command, Environment, isEnvironment, mustBeCommand, Parameter, Symbol} from './LatexStyle'; // LaTeX style structures
+import {isCommand, Command, Environment, isEnvironment, mustBeCommand, Parameter, Symbol} from "./LatexStyle"; // LaTeX style structures
 /** @external SyntaxTree */
-import {SyntaxTree, Node} from './SyntaxTree';
+import {SyntaxTree, Node} from "./SyntaxTree";
 import {Lexeme} from "./Latex";
 import {mustNotBeUndefined} from "./Utils";
 
@@ -48,7 +48,7 @@ export class LatexTree extends SyntaxTree {
         super(rootToken, source); // the superclass constructor
     }
 }
-;
+
 
 
 /**
@@ -85,7 +85,7 @@ export class Token extends Node {
         } else if (opt_initialProperties instanceof Object) { // if the initial properties are set
             // superclass constructor
             // superclass initial properties
-            let superInitialProperties = Object.create(opt_initialProperties);
+            const superInitialProperties = Object.create(opt_initialProperties);
             superInitialProperties.parentNode = opt_initialProperties.parentToken;
             superInitialProperties.childNodes = opt_initialProperties.childTokens;
             super(superInitialProperties);
@@ -103,11 +103,11 @@ export class Token extends Node {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        return skipNodeClass ? super.toString(true) : 'Token{' + super.toString(true) + '}';
+    toString(skipNodeClass = false) {
+        return skipNodeClass ? super.toString(true) : "Token{" + super.toString(true) + "}";
     }
 }
-;
+
 Object.defineProperties(Token.prototype, { // default properties
     lexeme: {value: undefined, enumerable: true}, // no lexeme
     parentNodeClass_: {value: Token} // parent node must be an EnvironmentToken instance
@@ -152,12 +152,12 @@ export class SymbolToken extends Token {
             if (!(initialProperties.symbol instanceof Symbol))
                 throw new TypeError('"initialProperties.symbol" isn\'t a Symbol instance');
             // store the symbol
-            Object.defineProperty(this, 'symbol', {value: initialProperties.symbol, enumerable: true});
+            Object.defineProperty(this, "symbol", {value: initialProperties.symbol, enumerable: true});
         } else { // if the symbol isn't defined
-            if (typeof initialProperties.pattern !== 'string')
+            if (typeof initialProperties.pattern !== "string")
                 throw new TypeError('"initialProperties.pattern" isn\'t a string');
             // store the unrecognized pattern
-            Object.defineProperty(this, 'pattern', {value: initialProperties.pattern});
+            Object.defineProperty(this, "pattern", {value: initialProperties.pattern});
         }
     }
 
@@ -191,32 +191,32 @@ export class SymbolToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        let source = '';
+    toString(skipNodeClass = false) {
+        let source = "";
         let iParameter = 0; // the parameter iterator
 
-        let pattern = this.pattern; // LaTeX input pattern
+        const pattern = this.pattern; // LaTeX input pattern
         // for all the pattern chars
         for (
             let nPatternChars = pattern.length, iPatternChar = 0;
             iPatternChar < nPatternChars;
             ++iPatternChar
         ) {
-            let patternChar = pattern[iPatternChar]; // the pattern char
-            if (patternChar === '#') { // if a parameter place
+            const patternChar = pattern[iPatternChar]; // the pattern char
+            if (patternChar === "#") { // if a parameter place
                 ++iPatternChar; // go to the next pattern char
-                let parameterToken = this.childNode(iParameter++); // try to get the parameter token
-                source += parameterToken ? parameterToken.toString(true) : '??';
+                const parameterToken = this.childNode(iParameter++); // try to get the parameter token
+                source += parameterToken ? parameterToken.toString(true) : "??";
             } else { // if the ordinary pattern char
                 source += patternChar;
             }
         }
         return skipNodeClass ?
             source :
-            'SymbolToken' + (this.symbol ? '' : '[?]') + '{' + source + '}';
+            "SymbolToken" + (this.symbol ? "" : "[?]") + "{" + source + "}";
     }
 }
-;
+
 Object.defineProperties(SymbolToken.prototype, { // default properties
     symbol: {value: undefined, enumerable: true} // no symbol token
 });
@@ -267,10 +267,10 @@ export class ParameterToken extends Token {
         super(initialProperties); // the superclass constructor
         if (!initialProperties.hasBrackets) // if there are no bounding brackets
         // store this fact
-            Object.defineProperty(this, 'hasBrackets', {value: false, enumerable: true});
+            Object.defineProperty(this, "hasBrackets", {value: false, enumerable: true});
         if (initialProperties.hasSpacePrefix) // if there is a space before
         // store this fact
-            Object.defineProperty(this, 'hasSpacePrefix', {value: true, enumerable: true});
+            Object.defineProperty(this, "hasSpacePrefix", {value: true, enumerable: true});
     }
 
 
@@ -292,9 +292,9 @@ export class ParameterToken extends Token {
      */
     get parameter(): Parameter | undefined {
         /** @type {?SymbolToken} */
-        let symbolToken = this.parentNode; // get the symbol token
-        let symbol = mustNotBeUndefined(symbolToken.symbol);
-        let parameterIndex = symbolToken.childIndex(this);
+        const symbolToken = this.parentNode; // get the symbol token
+        const symbol = mustNotBeUndefined(symbolToken.symbol);
+        const parameterIndex = symbolToken.childIndex(this);
         if (symbolToken !== undefined && parameterIndex !== undefined && parameterIndex >= 0)
             return symbol.parameter(parameterIndex);
     }
@@ -308,13 +308,13 @@ export class ParameterToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        let source = this.hasSpacePrefix ? ' ' : '';
-        source += this.hasBrackets ? '{' + super.toString(true) + '}' : super.toString(true);
-        return skipNodeClass ? source : 'ParameterToken{' + source + '}';
+    toString(skipNodeClass = false) {
+        let source = this.hasSpacePrefix ? " " : "";
+        source += this.hasBrackets ? "{" + super.toString(true) + "}" : super.toString(true);
+        return skipNodeClass ? source : "ParameterToken{" + source + "}";
     }
 }
-;
+
 Object.defineProperties(ParameterToken.prototype, { // default properties
     hasBrackets: {value: true, enumerable: true}, // there are bounding brackets
     hasSpacePrefix: {value: false, enumerable: true}, // there is no space before
@@ -359,7 +359,7 @@ export class CommandToken extends SymbolToken {
         if (!(initialProperties instanceof Object))
             throw new TypeError('"initialProperties" isn\'t an Object instance');
         // copy the initial properties for the superclass
-        let superInitialProperties = Object.create(initialProperties);
+        const superInitialProperties = Object.create(initialProperties);
         if (initialProperties.command) { // if the command is defined
             if (!(initialProperties.command instanceof Command))
                 throw new TypeError('"initialProperties.command" isn\'t a LatexStyle.Command instance');
@@ -367,12 +367,12 @@ export class CommandToken extends SymbolToken {
             superInitialProperties.symbol = initialProperties.command;
             super(superInitialProperties); // the superclass constructor
         } else { // if the command isn't defined
-            if (typeof initialProperties.name !== 'string')
+            if (typeof initialProperties.name !== "string")
                 throw new TypeError('"initialProperties.name" isn\'t a string');
-            superInitialProperties.pattern = '';
+            superInitialProperties.pattern = "";
             super(superInitialProperties); // the superclass constructor
             // store the unrecognized name
-            Object.defineProperty(this, 'name', {value: initialProperties.name});
+            Object.defineProperty(this, "name", {value: initialProperties.name});
         }
     }
 
@@ -383,7 +383,7 @@ export class CommandToken extends SymbolToken {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get command(): Command {
-        return mustBeCommand(this.symbol)
+        return mustBeCommand(this.symbol);
     }
 
 
@@ -393,7 +393,7 @@ export class CommandToken extends SymbolToken {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get name(): string {
-        return this.command.name
+        return this.command.name;
     }
 
     /**
@@ -404,14 +404,14 @@ export class CommandToken extends SymbolToken {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        let source = '\\' + this.name + super.toString(true);
+    toString(skipNodeClass = false) {
+        const source = "\\" + this.name + super.toString(true);
         return skipNodeClass ?
             source :
-            'CommandToken' + (this.command ? '' : '[?]') + '{' + source + '}';
+            "CommandToken" + (isCommand(this.symbol) ? "" : "[?]") + "{" + source + "}";
     }
 }
-;
+
 
 Object.defineProperties(CommandToken.prototype, { // make getters and setters enumerable
     command: {enumerable: true},
@@ -479,7 +479,7 @@ export class EnvironmentToken extends Token {
             throw new TypeError(
                 '"initialProperties.environment" isn\'t a LatexStyle.Environment instance');
         // store the environment
-        Object.defineProperty(this, 'environment', {
+        Object.defineProperty(this, "environment", {
             value: initialProperties.environment,
             enumerable: true
         });
@@ -492,7 +492,7 @@ export class EnvironmentToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get lexeme() {
-        return this.environment.lexeme
+        return this.environment.lexeme;
     }
 
 
@@ -502,7 +502,7 @@ export class EnvironmentToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get beginCommandToken() {
-        let beginCommandToken = this.childNode(0);
+        const beginCommandToken = this.childNode(0);
         return beginCommandToken instanceof CommandToken ? beginCommandToken : undefined;
     }
 
@@ -513,7 +513,7 @@ export class EnvironmentToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get endCommandToken() {
-        let endCommandToken = this.childNode(2);
+        const endCommandToken = this.childNode(2);
         return endCommandToken instanceof CommandToken ? endCommandToken : undefined;
     }
 
@@ -524,7 +524,7 @@ export class EnvironmentToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get bodyToken() {
-        let bodyToken = this.childNode(1);
+        const bodyToken = this.childNode(1);
         return bodyToken instanceof EnvironmentBodyToken ? bodyToken : undefined;
     }
 
@@ -537,21 +537,21 @@ export class EnvironmentToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        let beginCommandToken = this.beginCommandToken; // the begin command token
-        let endCommandToken = this.endCommandToken; // the end command token
-        let bodyToken = this.bodyToken; // the environment body token
-        let source = '\\begin{' + this.environment.name + '}';
+    toString(skipNodeClass = false) {
+        const beginCommandToken = this.beginCommandToken; // the begin command token
+        const endCommandToken = this.endCommandToken; // the end command token
+        const bodyToken = this.bodyToken; // the environment body token
+        let source = "\\begin{" + this.environment.name + "}";
         source += beginCommandToken ?
             SymbolToken.prototype.toString.call(beginCommandToken, true) :
-            '??';
-        source += bodyToken ? bodyToken.toString(true) : '??';
-        source += '\\end{' + this.environment.name + '}';
-        source += endCommandToken ? SymbolToken.prototype.toString.call(endCommandToken, true) : '??';
-        return skipNodeClass ? source : 'EnvironmentToken{' + source + '}';
+            "??";
+        source += bodyToken ? bodyToken.toString(true) : "??";
+        source += "\\end{" + this.environment.name + "}";
+        source += endCommandToken ? SymbolToken.prototype.toString.call(endCommandToken, true) : "??";
+        return skipNodeClass ? source : "EnvironmentToken{" + source + "}";
     }
 }
-;
+
 Object.defineProperties(EnvironmentToken.prototype, { // make getters and setters enumerable
     beginToken: {enumerable: true},
     endToken: {enumerable: true}
@@ -603,7 +603,7 @@ export class EnvironmentBodyToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get environment(): Environment | undefined {
-        return this.parentNode && getEnvironment(this.parentNode)
+        return this.parentNode && getEnvironment(this.parentNode);
     }
 
 
@@ -624,7 +624,7 @@ export class EnvironmentBodyToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get beginCommandToken() {
-        return this.parentNode && getBeginCommandToken(this.parentNode)
+        return this.parentNode && getBeginCommandToken(this.parentNode);
     }
 
 
@@ -634,7 +634,7 @@ export class EnvironmentBodyToken extends Token {
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get endCommandToken() {
-        return this.parentNode && getEndCommandToken(this.parentNode)
+        return this.parentNode && getEndCommandToken(this.parentNode);
     }
 
 
@@ -646,13 +646,13 @@ export class EnvironmentBodyToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
+    toString(skipNodeClass = false) {
         return skipNodeClass ?
             super.toString(true) :
-            'EnvironmentBodyToken{' + super.toString(true) + '}';
+            "EnvironmentBodyToken{" + super.toString(true) + "}";
     }
 }
-;
+
 Object.defineProperties(EnvironmentBodyToken.prototype, { // default properties
     parentNodeClass_: {value: EnvironmentToken} // parent node must be an EnvironmentToken instance
 });
@@ -698,7 +698,7 @@ export class SpaceToken extends Token {
             if (!isFinite(initialProperties.lineBreakCount) || initialProperties.lineBreakCount < 0)
                 throw new TypeError('"initialProperties.lineBreakCount" isn\'t a non-negative number');
             // store the line break number
-            Object.defineProperty(this, 'lineBreakCount', {
+            Object.defineProperty(this, "lineBreakCount", {
                 value: initialProperties.lineBreakCount,
                 enumerable: true
             });
@@ -724,29 +724,29 @@ export class SpaceToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false): string {
+    toString(skipNodeClass = false): string {
         if (skipNodeClass) { // if the node class name must be skipped
             switch (this.lineBreakCount) {
                 case 0:
-                    return ' ';
+                    return " ";
                 case 1:
-                    return '\n';
+                    return "\n";
                 default:
-                    return '\n\n';
+                    return "\n\n";
             }
         } else { // if the node class name must be included
             switch (this.lineBreakCount) {
                 case 0:
-                    return 'SpaceToken{ }';
+                    return "SpaceToken{ }";
                 case 1:
-                    return 'SpaceToken{\n}';
+                    return "SpaceToken{\n}";
                 default:
-                    return 'SpaceToken{\n\n}';
+                    return "SpaceToken{\n\n}";
             }
         }
     }
 }
-;
+
 
 Object.defineProperties(SpaceToken.prototype, { // default properties
     lineBreakCount: {value: 0, enumerable: true} // line break number
@@ -789,11 +789,11 @@ export class SourceToken extends Token {
         if (!Lexeme[initialProperties.lexeme])
             throw new TypeError('"initialProperties.lexeme" isn\'t known');
         // store the lexeme
-        Object.defineProperty(this, 'lexeme', {value: initialProperties.lexeme, enumerable: true});
-        if (typeof initialProperties.source !== 'string')
+        Object.defineProperty(this, "lexeme", {value: initialProperties.lexeme, enumerable: true});
+        if (typeof initialProperties.source !== "string")
             throw new TypeError('"initialProperties.sources" isn\'t a string');
         // store the sources
-        Object.defineProperty(this, 'source', {value: initialProperties.source, enumerable: true});
+        Object.defineProperty(this, "source", {value: initialProperties.source, enumerable: true});
     }
 
 
@@ -805,10 +805,10 @@ export class SourceToken extends Token {
      * @override
      * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
-    toString(skipNodeClass: boolean = false) {
-        return skipNodeClass ? this.source : 'SourceToken[' + this.lexeme + ']{' + this.source + '}';
+    toString(skipNodeClass = false) {
+        return skipNodeClass ? this.source : "SourceToken[" + this.lexeme + "]{" + this.source + "}";
     }
 }
-;
+
 
 export default SyntaxTree;

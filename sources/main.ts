@@ -18,9 +18,9 @@
  * 02111-1307, USA.
  */
 
-export * from "./lib/Utils" // general JavaScript utils
-export * from "./lib/Latex" // general LaTeX definitions
-export * from "./lib/LatexStyle" // LaTeX style structures
-export * from "./lib/SyntaxTree" // syntax tree structure elements
-export * from "./lib/LatexTree" // LaTeX syntax tree structure elements
-export * from "./lib/LatexParser"// LaTeX parser class
+export * from "./lib/Utils"; // general JavaScript utils
+export * from "./lib/Latex"; // general LaTeX definitions
+export * from "./lib/LatexStyle"; // LaTeX style structures
+export * from "./lib/SyntaxTree"; // syntax tree structure elements
+export * from "./lib/LatexTree"; // LaTeX syntax tree structure elements
+export * from "./lib/LatexParser"; // LaTeX parser class
