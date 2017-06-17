@@ -1,8 +1,13 @@
-import {Command, Environment} from "../../sources/lib/LatexStyle";
 import {
-    CommandToken, ParameterToken, SourceToken, SpaceToken, EnvironmentBodyToken,
+    Command,
+    Environment,
+    CommandToken,
+    ParameterToken,
+    SourceToken,
+    SpaceToken,
+    EnvironmentBodyToken,
     EnvironmentToken
-} from "../../sources/lib/LatexTree";
+} from "../../sources/main";
 /**
  * @fileoverview LaTeX syntax tree structure element tests
  * This file is a part of TeXnous project.
@@ -24,7 +29,6 @@ import {
  */
 
 import {expect} from "chai";
-import {Lexeme} from "../../sources/lib/Latex";
 
 const documentBeginCommand = new Command({name: "document"});
 const documentEndCommand = new Command({name: "enddocument"});
@@ -34,7 +38,6 @@ const authorCommand = new Command({name: "author", pattern: "[#1]#2", parameters
 
 /**
  * LaTeX tree token class tests
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 describe("Token", () => {
     const numberToken = new SourceToken({source: "123", lexeme: "NUMBER"});

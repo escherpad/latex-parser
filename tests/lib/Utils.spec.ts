@@ -25,7 +25,6 @@ import {TargetObject} from "../../sources/lib/Utils";
 
 /**
  * JS object own properties updating tests
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 describe("updateProperties", () => {
     it("incorrect target", function () {
@@ -75,7 +74,6 @@ describe("updateProperties", () => {
 
 /**
  * JS object own properties testing tests
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 describe("testProperties", () => {
     it("incorrect target", function () {

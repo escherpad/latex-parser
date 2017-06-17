@@ -39,7 +39,6 @@ export interface OptAttributes {
  *        properties will be used if undefined
  * @param {{writable:boolean,enumerable:boolean,configurable:boolean}=} opt_attributes
  *        property attributes, { writable: true, enumerable: true, configurable: true } by default
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export function updateProperties(target: TargetObject,
                                  values: ValuesObject,
@@ -102,7 +101,6 @@ export function updateProperties(target: TargetObject,
  *        properties will be used if undefined
  * @param {boolean=true} opt_skipUndefined true to skip keys with undefined values, false otherwise
  * @return {boolean} true if all the defined properties are the same false otherwise
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export function testProperties(target: TargetObject,
                                values?: ValuesObject,
@@ -147,7 +145,31 @@ export function isString(x: any): x is string {
     return typeof x === "string";
 }
 
-export function mustNotBeUndefined<T>(x?: T): T {
-    if (!x) throw new Error();
+export function mustNotBeUndefined<T>(x?: T, msg?: string): T {
+    if (!x) throw new Error(msg);
     return x;
+}
+
+// @Deprecated
+export function mustBeObject(o: any, msg?: string) {
+    if (!(o instanceof Object))
+        throw new TypeError(msg ? msg : "Expected Object");
+    return o;
+}
+
+export function mustBeString(o: any, msg?: string): string {
+    if (typeof o !== "string")
+        throw new TypeError(msg ? msg : "Expected string");
+    return o;
+}
+
+export function mustBeArray(a: any, msg?: string): any[] {
+    if (!(isArray(a)))
+        throw new TypeError(msg ? msg : "Expected Array");
+    return a;
+}
+
+//noinspection JSUnusedGlobalSymbols
+export function isArray(x: any): x is any[] {
+    return x.constructor === Array;
 }

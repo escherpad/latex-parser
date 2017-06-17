@@ -94,13 +94,11 @@ let latexParser: LatexParser;
 describe("LatexParser", () => {
     /**
      * LaTeX parser object constructor test
-     * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     latexParser = new LatexParser(latexStyle);
 
     /**
      * Spaces and analogs handling tests
-     * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     it("parse spaces", function () {
         expect(latexParser.parse("").join("")).to.equal("");
@@ -115,7 +113,6 @@ describe("LatexParser", () => {
     });
     /**
      * LaTeX symbols handling tests
-     * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     it("parse symbols", function () {
         // TODO what should the parser do here? CommandToken[?] or symbol?
@@ -131,8 +128,6 @@ describe("LatexParser", () => {
     });
     /**
      * LaTeX commands handling tests
-     * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
-     * @author Maarten Trompper <maartentrompper@freedom.nl>
      */
     it("parse commands", function () {
         expect(latexParser.parse('\\"o').join("")).to.equal('CommandToken{\\"o}');
@@ -146,7 +141,6 @@ describe("LatexParser", () => {
     });
     /**
      * LaTeX environments handling tests
-     * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
      */
     it("parse environments", function () {
         expect(latexParser.parse("\\begin{document}\\end{document}").join()).to.equal("EnvironmentToken{\\begin{document}\\end{document}}");

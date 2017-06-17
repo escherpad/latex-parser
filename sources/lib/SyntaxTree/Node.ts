@@ -1,65 +1,5 @@
-/**
- * @fileoverview Syntax tree structure elements
- * This file is a part of TeXnous project.
- *
- * @copyright TeXnous project team (http://texnous.org) 2016
- * @license LGPL-3.0
- *
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along with this library;
- * if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- */
-
-import {isNumber} from "./Utils";
-
-"use strict";
-
-/**@module */
-
-
-/**
- * Syntax tree structure
- * @class
- * @property {!Node} rootNode - The root node
- * @property {string} source - The source text
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
- */
-export class SyntaxTree {
-    //noinspection JSUnusedGlobalSymbols // TODO
-    readonly rootNode: Node;
-    readonly source: string;
-
-
-    /**
-     * Constructor
-     * @param {!Node} rootNode the root node (must have no parent and no tree)
-     * @param {string} source the sources text that has this syntax tree
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-     */
-    constructor(rootNode: Node, source: string) {
-        if (!(rootNode instanceof Node))
-            throw new TypeError('"rootNode" isn\'t a SyntaxTree.Node instance');
-        if (rootNode.parentNode) throw new TypeError('"rootNode" has a parent node');
-        if (rootNode.tree) throw new TypeError('"rootNode" is a tree root');
-
-        if (typeof source !== "string")  throw new TypeError('"sources" isn\'t a string');
-        // store the root node
-        Object.defineProperty(this, "rootNode", {value: rootNode, enumerable: true});
-        Object.defineProperty(this, "source", {value: source, enumerable: true}); // store the sources
-        // update the root node tree
-        Object.defineProperty(rootNode, "tree", {value: this, enumerable: true});
-    }
-}
-
-
+import {SyntaxTree} from "./index";
+import {isNumber, mustBeArray, mustBeObject, mustNotBeUndefined} from "../Utils";
 
 /**
  * Syntax tree node properties
@@ -67,7 +7,6 @@ export class SyntaxTree {
  * @property {(?Node|undefined)} parentNode - The parent node or undefined if there is no parent
  * @property {(!Array.<Node>|undefined)} childNodes - The list of the child nodes
  * @exports
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export interface NodeProperties {
     parentNode?: Node;
@@ -82,7 +21,6 @@ export interface NodeProperties {
  * @property {?Node} parentNode - The parent node or undefined if there is no parent
  * @property {!Array.<Node>} childNodes - The child node list
  * @property {number} subtreeSize - The size of the subtree formed by this node
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class Node {
     tree: SyntaxTree;
@@ -90,20 +28,20 @@ export class Node {
     private subtreeSize: number;
     private childNodes_: Node[];
 
-
     /**
      * Constructor
      * @param {!NodeProperties=} opt_initialProperties the initial property values
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     constructor(opt_initialProperties?: NodeProperties) {
+        this.childNodes_ = [];
+
         if (opt_initialProperties !== undefined) { // if the initial properties are defined
-            if (!(opt_initialProperties instanceof Object))
-                throw new TypeError("initialProperties isn't an Object instance");
+            mustBeObject(opt_initialProperties, "initialProperties isn't an Object instance");
             if (opt_initialProperties.childNodes !== undefined) { // if the child node list is set
-                if (!(opt_initialProperties.childNodes instanceof Array))
-                    throw new TypeError("initialProperties.childNodes isn't an Array instance");
+
+                mustBeArray(opt_initialProperties.childNodes, "initialProperties.childNodes isn't an Array instance");
                 opt_initialProperties.childNodes.forEach(this.insertChildSubtree, this);
+
             }
             const optParentNode = opt_initialProperties.parentNode;
             if (optParentNode !== undefined) { // if the parent node is set
@@ -121,7 +59,6 @@ export class Node {
     /**
      * Get the child nodes
      * @return {!Array.<Node>} the child node list
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     get childNodes(): Node[] {
         return this.childNodes_.slice();
@@ -132,7 +69,6 @@ export class Node {
      * Get the child node
      * @param {(!Node|number)} node the child node or its child index
      * @return {?Node} the child node or undefined of there is no such a child node
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     childNode(node: Node | number): Node | undefined {
         if (isNumber(node)) // if the node child index is given
@@ -147,7 +83,6 @@ export class Node {
      * Get the child node index
      * @param {(!Node|number)} node the child node or its child index
      * @return {(number|undefined)} the child node or undefined of there is no such a child node
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     childIndex(node: Node | number): number | undefined {
         if (isNumber(node)) // if the node child index is given
@@ -166,7 +101,6 @@ export class Node {
      * @param {number=0} childNodesToCover
      *        the number of this child nodes to become the child nodes of the new node
      * @return {?Node} the inserted node or undefined if cannot insert
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     insertChildNode(node: Node, childIndex: number, childNodesToCover: number): Node {
         if (!(node instanceof Node)) throw new TypeError('"node" isn\'t a SyntaxTree.Node instance');
@@ -180,7 +114,7 @@ export class Node {
         if (node.childNodes_.length) throw new TypeError('"node" has child nodes');
         if (!this.hasOwnProperty("childNodes_")) // if there was no child nodes
         // init the property
-            Object.defineProperty(this, "childNodes_", {value: [], configurable: true});
+            this.childNodes_ = [];
         // use the last position by default
         if (childIndex === undefined) childIndex = this.childNodes_.length;
         // do not cover any child nodes by default
@@ -188,15 +122,11 @@ export class Node {
         // replace the child nodes by the new node
         const nodeChildNodes = this.childNodes_.splice(childIndex, childNodesToCover, node);
         // update the size of the subtree formed by this node
-        Object.defineProperty(this, "subtreeSize", {
-            value: this.subtreeSize + 1,
-            enumerable: true,
-            configurable: true
-        });
+        this.subtreeSize = this.subtreeSize + 1;
         // for all the parent nodes
         for (let parentNode = this.parentNode; parentNode; parentNode = parentNode.parentNode) {
             // update the size of the subtree formed by the parent node
-            Object.defineProperty(parentNode, "subtreeSize", {value: parentNode.subtreeSize + 1});
+            parentNode.subtreeSize = parentNode.subtreeSize + 1;
         }
         // update the parent node of the new node
         Object.defineProperty(node, "parentNode", {
@@ -228,7 +158,6 @@ export class Node {
      * @param {!Node} node the subtree to insert root node (must have no parent)
      * @param {number=} childIndex
      *        the position of the subtree root for this child node list, the last by default
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     insertChildSubtree(node: Node, childIndex?: number) {
         if (!(node instanceof Node))
@@ -244,7 +173,9 @@ export class Node {
         // init the property
             Object.defineProperty(this, "childNodes_", {value: [], configurable: true});
         // use the last position by default
-        if (childIndex === undefined) childIndex = this.childNodes_.length;
+        if (childIndex === undefined)
+            childIndex = this.childNodes_.length;
+
         this.childNodes_.splice(childIndex, 0, node); // insert the new node to the child list
         const nodeSubtreeSize = node.subtreeSize; // the size of the subtree formed by the node
         // update the size of the subtree formed by this node
@@ -271,7 +202,6 @@ export class Node {
      * Remove a child node of this node. All its child nodes become the child nodes of this node
      * @param {(!Node|number)} nodeOrNodeIndex the subtree root or its child index
      * @return {?Node} the removed node or undefined of there is no such a child node
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     removeChildNode(nodeOrNodeIndex: number | Node): Node | undefined {
         const nodeChildIndex: number | undefined = this.childIndex(nodeOrNodeIndex); // the child index of the node
@@ -285,7 +215,7 @@ export class Node {
 
         if (this.childNodes_.length) { // if there are child nodes
             // update this node subtree size
-            Object.defineProperty(this, "subtreeSize", {value: this.subtreeSize - 1});
+            this.subtreeSize = this.subtreeSize - 1;
         } else { // if there are no child nodes
             delete this.childNodes_; // this node has no child nodes anymore
             delete this.subtreeSize; // this node has node subtree anymore
@@ -293,7 +223,7 @@ export class Node {
         // for all the parent nodes
         for (let parentNode = this.parentNode; parentNode; parentNode = parentNode.parentNode) {
             // update the size of the subtree formed by the parent node
-            Object.defineProperty(parentNode, "subtreeSize", {value: parentNode.subtreeSize - 1});
+            parentNode.subtreeSize = parentNode.subtreeSize - 1;
         }
         delete node.parentNode; // the node has no parent node anymore
 
@@ -307,14 +237,15 @@ export class Node {
      * Remove a subtree formed by a child node of this node
      * @param {(!Node|number)} node the subtree root or its child index
      * @return {?Node} the removed subtree root node or undefined of there is no such a child node
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     removeChildSubtree(node: Node | number): Node | undefined {
         const nodeChildIndex: number | undefined = this.childIndex(node); // the child index of the node
-        if (nodeChildIndex === undefined) return undefined; // return if there is no such a child
 
-        node = this.childNodes_.splice(nodeChildIndex, 1)[0]; // remove the node from the child list
-        const nodeSubtreeSize = node.subtreeSize; // the size of the subtree formed by the node
+        if (nodeChildIndex === undefined)
+            return undefined; // return if there is no such a child
+
+        const theNode: Node = mustNotBeUndefined(this.childNodes_.splice(nodeChildIndex, 1)[0]); // remove the node from the child list
+        const nodeSubtreeSize = theNode.subtreeSize; // the size of the subtree formed by the node
         if (this.childNodes_.length) { // if there are child nodes
             // update this node subtree size
             Object.defineProperty(this, "subtreeSize", {value: this.subtreeSize - nodeSubtreeSize});
@@ -329,8 +260,8 @@ export class Node {
                 value: parentNode.subtreeSize - nodeSubtreeSize
             });
         }
-        delete node.parentNode; // the node has no parent node anymore
-        return node;
+        delete theNode.parentNode; // the node has no parent node anymore
+        return theNode;
     }
 
 
@@ -340,7 +271,6 @@ export class Node {
      *        true to not include the node class name into the output, false otherwise
      * @return {string} the sources string
      * @override
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     toString(skipNodeClass = false): string {
         let source = ""; // the sources
@@ -351,14 +281,3 @@ export class Node {
         return skipNodeClass ? source : "SourceTree.Node{" + source + "}";
     }
 }
-
-Object.defineProperties(Node.prototype, { // make getters and setters enumerable
-    childNodes: {enumerable: true}
-});
-Object.defineProperties(Node.prototype, { // default property values
-    tree: {value: undefined, enumerable: true}, // no tree
-    parentNode: {value: undefined, enumerable: true}, // no parent node
-    subtreeSize: {value: 1, enumerable: true}, // only one node in the subtree
-    childNodes_: {value: [], enumerable: false}, // no child nodes
-    parentNodeClass_: {value: Node, enumerable: false} // parent node must be a Node instance
-});

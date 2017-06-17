@@ -25,7 +25,6 @@ import {expect} from "chai";
 
 /**
  * LaTeX state structure tests
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 describe("State", () => {
 
@@ -34,7 +33,6 @@ describe("State", () => {
 
 /**
  * LaTeX state change operations tests
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
  */
 describe("Operation", () => {
 

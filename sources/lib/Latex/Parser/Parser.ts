@@ -1,39 +1,18 @@
-/**
- * @fileoverview LaTeX parser class
- * This file is a part of TeXnous project.
- *
- * @copyright TeXnous project team (http://texnous.org) 2016
- * @license LGPL-3.0
- *
- * This library is free software; you can redistribute it and/or modify it under the terms of the
- * GNU Lesser General Public License as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License along with this library;
- * if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- */
-
-/**@module */
-
-
-import {LatexStyle, Symbol as SymbolItem, Command, Parameter, Environment, EnvironmentAndPackage} from "./LatexStyle";
-import {
-    ParameterToken,
-    CommandToken,
-    SymbolToken,
-    Token,
-    SpaceToken,
-    EnvironmentToken,
-    EnvironmentBodyToken
-} from "./LatexTree";
-import {Directive, GROUP, Lexeme, ModeStates, Operation, State} from "./Latex";
-import {isNumber, isString, mustNotBeUndefined} from "./Utils";
-
+import {Context} from "./Context";
+import {LatexStyle} from "../../LatexStyle/index";
+import {Token} from "../../SyntaxTree/Token/index";
+import {Parameter} from "../../LatexStyle/Item/Parameter";
+import {EnvironmentToken} from "../../SyntaxTree/Token/EnvironmentToken";
+import {EnvironmentBodyToken} from "../../SyntaxTree/Token/EnvironmentBodyToken";
+import {EnvironmentAndPackage} from "../../LatexStyle/Item/Environment";
+import {Command} from "../../LatexStyle/Item/Symbol/Command";
+import {SpaceToken} from "../../SyntaxTree/Token/SpaceToken";
+import {SymbolToken} from "../../SyntaxTree/Token/SymbolToken";
+import {ParameterToken} from "../../SyntaxTree/Token/ParameterToken";
+import {CommandToken} from "../../SyntaxTree/Token/CommandToken";
+import {Lexeme} from "../Lexeme";
+import {Symbol as SymbolItem} from "../../LatexStyle/Item/Symbol/index";
+import {isNumber, isString, mustNotBeUndefined} from "../../Utils";
 
 /**
  * Parse the next token
@@ -41,7 +20,6 @@ import {isNumber, isString, mustNotBeUndefined} from "./Utils";
  * @param {!LatexStyle} latexStyle the latex style
  * @return {?Token} the parsed token or undefined if the token cannot be parsed
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseToken_(context: Context, latexStyle: LatexStyle): Token | undefined {
     let token: Token | undefined = parseSpaceToken_(context); // collect comments and try to parse a space token
@@ -70,12 +48,11 @@ function parseToken_(context: Context, latexStyle: LatexStyle): Token | undefine
  * Parse a parameter token
  * @param {!Context} context the parsing context
  * @param {!LatexStyle} latexStyle the latex style
- * @param {!LatexStyle.Parameter} parameter the symbol or command parameter description
+ * @param {!Parameter} parameter the symbol or command parameter description
  * @param {string=} opt_endLabel
  *        the parameter end label or undefined if there should be a single token
  * @return {?ParameterToken} the parsed parameter token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseParameterToken_(context: Context, latexStyle: LatexStyle, parameter: Parameter, opt_endLabel?: string) {
     const currentTokenBackup = context.currentToken; // store the current token
@@ -125,7 +102,6 @@ function parseParameterToken_(context: Context, latexStyle: LatexStyle, paramete
  * @param {!LatexStyle} latexStyle latex style
  * @return {?EnvironmentToken} the parsed token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseEnvironmentToken_(context: Context, latexStyle: LatexStyle): EnvironmentToken | undefined {
     if (context.source.substring(context.position).indexOf("\\begin") !== 0) return undefined;
@@ -139,7 +115,7 @@ function parseEnvironmentToken_(context: Context, latexStyle: LatexStyle): Envir
     context.charNumber += nameMatch[0].length; // skip the environment name in the current line
     const currentTokenBackup = context.currentToken; // store the current token
     // try to get the corresponding environment
-    const environment: Environment | EnvironmentAndPackage = latexStyle.environments(context.currentState, name)[0];
+    const environment: EnvironmentAndPackage = latexStyle.environments(context.currentState, name)[0];
     const environmentToken = context.currentToken = environment ? // the environment token
         new EnvironmentToken({environment: environment.environment}) :
         new EnvironmentToken({name: name});
@@ -198,8 +174,6 @@ function parseEnvironmentToken_(context: Context, latexStyle: LatexStyle): Envir
  * @param {!LatexStyle} latexStyle latex style
  * @return {?CommandToken} the parsed token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
- * @author Maarten Trompper <maartentrompper@freedom.nl>
  *
  */
 function parseCommandToken_(context: Context, latexStyle: LatexStyle): Token | undefined {
@@ -232,7 +206,6 @@ function parseCommandToken_(context: Context, latexStyle: LatexStyle): Token | u
  * @param {!LatexStyle} latexStyle latex style
  * @return {?Token} the parsed token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseSymbolsToken_(context: Context, latexStyle: LatexStyle): Token | undefined {
     // get the available symbols
@@ -261,10 +234,9 @@ function parseSymbolsToken_(context: Context, latexStyle: LatexStyle): Token | u
  * Try to parse a symbol pattern
  * @param {!Context} context the parsing context// generate unrecognized symbol token
  * @param {!LatexStyle} latexStyle the latex style
- * @param {!Array.<!LatexStyle.Symbol>} symbols the symbol or command descriptions in the priority descending order
+ * @param {!Array.<!Symbol>} symbols the symbol or command descriptions in the priority descending order
  * @return {?Token} the parsed symbol or command token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parsePatterns_(context: Context, latexStyle: LatexStyle, symbols: SymbolItem[]): Token | undefined {
     const contextBackup = context.copy(); // backup the current context
@@ -287,11 +259,10 @@ function parsePatterns_(context: Context, latexStyle: LatexStyle, symbols: Symbo
 /**
  * Try to parse a symbol pattern
  * @param {!Context} context the parsing context
- * @param {!LatexStyle>} latexStyle latex style
- * @param {!Array.<!LatexStyle.Symbol>} symbol the symbol or command description
+ * @param {!LatexStyle} latexStyle latex style
+ * @param {!Array.<!Symbol>} symbol the symbol or command description
  * @return {?Token} the parsed symbol or command token or undefined if cannot parse
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parsePattern_(context: Context, latexStyle: LatexStyle, symbol: SymbolItem): Token | undefined {
     const currentTokenBackup = context.currentToken; // store the current token
@@ -353,10 +324,9 @@ function parsePattern_(context: Context, latexStyle: LatexStyle, symbol: SymbolI
  * @param {!Context} context the parsing context
  * @param {!LatexStyle} latexStyle latex style
  * @param {string} endLabel the label to parse until
- * @param {Latex.Lexeme=} opt_lexeme the lexeme of the single token to parse
+ * @param {Lexeme=} opt_lexeme the lexeme of the single token to parse
  * @return {boolean} true if the parsing was successful, false otherwise
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseUntilLabel_(context: Context, latexStyle: LatexStyle, endLabel: string, opt_lexeme?: Lexeme) {
     switch (opt_lexeme) {
@@ -380,7 +350,6 @@ function parseUntilLabel_(context: Context, latexStyle: LatexStyle, endLabel: st
  * @param {!Context} context the parsing context
  * @return {boolean} true if there was a comment line, false otherwise
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseCommentLine_(context: Context): boolean {
     // try to find a comment int the sources tail
@@ -404,7 +373,6 @@ function parseCommentLine_(context: Context): boolean {
  * @param {!Context} context the parsing context
  * @param {!Token} token the token to process
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function processParsedToken_(context: Context, token: Token) {
     // TODO process comments and position
@@ -422,7 +390,6 @@ function processParsedToken_(context: Context, token: Token) {
  * @param {!Context} context the parsing context
  * @return {?SpaceToken} the parsed token or undefined if cannot parse a space token
  * @private
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 function parseSpaceToken_(context: Context): SpaceToken | undefined {
     let isSpace = false; // true is the sources fragment is a space token, false otherwise
@@ -455,7 +422,6 @@ function parseSpaceToken_(context: Context): SpaceToken | undefined {
  * LaTeX parser structure
  * @class
  * @property {!LatexStyle} latexStyle latexStyle - The LaTeX style description to be used for parsing
- * @author Kirill Chuvilin <k.chuvilin@texnous.org>
  */
 export class LatexParser {
     latexStyle: LatexStyle;
@@ -463,13 +429,10 @@ export class LatexParser {
     /**
      * Constructor
      * @param {!LatexStyle} latexStyle latexStyle LaTeX style description to be used for parsing
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     constructor(latexStyle: LatexStyle) {
-        if (!(latexStyle instanceof LatexStyle))
-            throw new TypeError('"latexStyle" isn\'t a LatexStyle instance');
-        // store the style description
-        Object.defineProperty(this, "latexStyle", {value: latexStyle, enumerable: true});
+        if (!(latexStyle instanceof LatexStyle)) throw new TypeError(`"latexStyle" isn't a LatexStyle instance`);
+        this.latexStyle = latexStyle;
     }
 
 
@@ -478,7 +441,6 @@ export class LatexParser {
      * @param {string} source the sources to parse
      * @param {(!Context|undefined)} opt_context the parsing context
      * @return {!Array.<!Token>} the list of the parsed tokens
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
      */
     parse(source: string, opt_context?: Context): Token[] {
         if (typeof source !== "string") throw new TypeError(`"sources" isn't a string`);
@@ -501,111 +463,5 @@ export class LatexParser {
             parsedTokens.push(parsedToken);
 
         return parsedTokens;
-    }
-}
-
-
-/**
- * The parsing context
- * @struct
- * @property {string} source - The source to parse
- * @property {number} position - The current position in the source
- * @property {?Token} currentToken - The currently parsing token
- * @property {!Latex.State} currentState - The current LaTeX state
- * @property {!Array.<!Latex.State>} stateStack - The stack of LaTeX sates
- * @property {!Array.<string>} comments - The comment list for the nex token
- * @property {number} lineNumber - The current line number
- * @property {number} charNumber - The current char number in the current line
- * @property {function} copy
- * @author Kirill Chuvilin <kirill.chuvilin@gmail.com>
- */
-export class Context {
-    source: string;
-    position: number;
-    currentToken?: Token;
-    currentState: State;
-    stateStack: State[];
-    comments: string[];
-    lineNumber: number;
-    charNumber: number;
-
-
-    /**
-     * Constructor
-     * @param {string=} opt_source the sources to parse (empty string by default)
-     */
-    constructor(opt_source = "") {
-        this.source = opt_source; // store the sources
-        this.position = 0; // start from the beginning
-        this.lineNumber = 0; // start from the line 0
-        this.charNumber = 0; // start from the char 0
-        this.currentToken = undefined; // no tokens were parsed
-        this.currentState = new State(); // initial LaTeX state
-        this.stateStack = []; // no stored states
-        this.comments = []; // no comments for the next token
-    }
-
-
-    /**
-     * Copy this context
-     * @param {!Context=} opt_target the context to copy to or undefined to create a new one
-     * @return {!Context} the context copy
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-     */
-    copy(opt_target?: Context): Context {
-        const target = opt_target || new Context(); // the context to copy this context in
-        target.source = this.source;
-        target.position = this.position;
-        target.lineNumber = this.lineNumber;
-        target.charNumber = this.charNumber;
-        target.currentToken = this.currentToken;
-        target.currentState = this.currentState.copy();
-        target.stateStack = this.stateStack.slice();
-        target.comments = this.comments.slice();
-        return target;
-    }
-
-
-    /**
-     * Update the LaTeX state
-     * @param {!Array.<!Latex.Operation>} operations the LaTeX operation list
-     * @author Kirill Chuvilin <k.chuvilin@texnous.org>
-     */
-    updateState(operations: Operation[]) {
-        if (!(operations instanceof Array))
-            throw new TypeError('"operations" isn\'t an Array instance');
-        let newModeStates: ModeStates = {}; // the modes to update
-        operations.forEach((operation: Operation) => {
-
-            switch (operation.directive) {
-                case Directive.BEGIN:
-
-                    switch (operation.operand) {
-                        case GROUP:
-                            this.currentState.update(newModeStates); // store the mode states
-                            newModeStates = {}; // no more states to update
-                            this.stateStack.push(this.currentState.copy()); // store the current state
-                            break;
-                        default:
-
-                            newModeStates[operation.operand] = true; // turn the state on
-                    }
-                    break;
-                case Directive.END:
-
-                    switch (operation.operand) {
-                        case GROUP:
-                            newModeStates = {}; // no need to store the states
-                            if (this.stateStack.length < 1) throw new Error("state stack is empty");
-                            this.currentState = mustNotBeUndefined(this.stateStack.pop()); // restore the current state
-                            break;
-                        default:
-
-                            newModeStates[operation.operand] = false; // turn the state off
-                    }
-                    break;
-            }
-        });
-        this.currentState.update(newModeStates); // store the mode states
     }
 }
