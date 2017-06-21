@@ -173,3 +173,11 @@ export function mustBeArray(a: any, msg?: string): any[] {
 export function isArray(x: any): x is any[] {
     return x.constructor === Array;
 }
+
+export const mconcat = <T>(mappend: (x: T, y: T) => T, ...args: T[]) => args.reduceRight(mappend);
+export const snd = <T, U>(pair: [T, U]) => pair[1];
+
+
+export function concatMap<T, U>(arr: T[], f: (t: T) => U[]): U[] {
+    return [].concat.apply([], arr.map(f));
+}

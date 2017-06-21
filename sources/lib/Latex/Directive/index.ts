@@ -4,7 +4,7 @@
  */
 export const Directive = {
     BEGIN: "BEGIN", // begin something
-    END: "END"    // end something
+    END: "END"      // end something
 };
 export type Directive = keyof typeof Directive;
 

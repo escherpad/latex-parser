@@ -115,6 +115,20 @@ describe("LatexParser", () => {
      * LaTeX symbols handling tests
      */
     it("parse symbols", function () {
+
+        expect(latexParser.parse(
+            "{{}} "
+        ).join("")).to.equal(
+            "LatexTree.SymbolToken { \"{{}}\" } 0-3" +
+            "LatexTree.SpaceToken { \" \" } 4-4"
+        );
+        expect(latexParser.parse(
+            "{{}}%\n\n "
+        )).to.equal(
+            "LatexTree.SymbolToken { \"{{}}\" } 0-3" +
+            "LatexTree.SpaceToken { \"\n\" } 6-7"
+        );
+
         // TODO what should the parser do here? CommandToken[?] or symbol?
         expect(latexParser.parse("%\n\\\\%\n").join("")).to.equal("CommandToken{\\\\}");
         expect(latexParser.parse(" \\\\").join("")).to.equal("SpaceToken{ }CommandToken{\\\\}");
@@ -126,6 +140,7 @@ describe("LatexParser", () => {
         expect(latexParser.parse('"%\n"').join("")).to.equal('SymbolToken{"}SymbolToken{"}');
         expect(latexParser.parse('\'%\n"').join("")).to.equal("SymbolToken[?]{'}SymbolToken{\"}");
     });
+
     /**
      * LaTeX commands handling tests
      */

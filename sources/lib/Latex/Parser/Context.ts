@@ -3,7 +3,7 @@ import {Token} from "../../SyntaxTree/Token/index";
 import {Operation} from "../Operation";
 import {ModeStates} from "../Mode";
 import {GROUP} from "../Directive/GROUP";
-import {mustNotBeUndefined} from "../../Utils";
+import {mustBeArray, mustNotBeUndefined} from "../../Utils";
 
 /**
  * The parsing context
@@ -36,13 +36,13 @@ export class Context {
      */
     constructor(opt_source = "") {
         this.source = opt_source; // store the sources
-        this.position = 0; // start from the beginning
-        this.lineNumber = 0; // start from the line 0
-        this.charNumber = 0; // start from the char 0
-        this.currentToken = undefined; // no tokens were parsed
+        this.position = 0;        // start from the beginning
+        this.lineNumber = 0;      // start from the line 0
+        this.charNumber = 0;      // start from the char 0
+        this.currentToken = undefined;   // no tokens were parsed
         this.currentState = new State(); // initial LaTeX state
-        this.stateStack = []; // no stored states
-        this.comments = []; // no comments for the next token
+        this.stateStack = [];     // no stored states
+        this.comments = [];       // no comments for the next token
     }
 
 
@@ -53,6 +53,7 @@ export class Context {
      */
     copy(opt_target?: Context): Context {
         const target = opt_target || new Context(); // the context to copy this context in
+
         target.source = this.source;
         target.position = this.position;
         target.lineNumber = this.lineNumber;
@@ -61,6 +62,7 @@ export class Context {
         target.currentState = this.currentState.copy();
         target.stateStack = this.stateStack.slice();
         target.comments = this.comments.slice();
+
         return target;
     }
 
@@ -70,9 +72,10 @@ export class Context {
      * @param {!Array.<!Operation>} operations the LaTeX operation list
      */
     updateState(operations: Operation[]) {
-        if (!(operations instanceof Array))
-            throw new TypeError('"operations" isn\'t an Array instance');
+        mustBeArray(operations, `"operations" isn't an Array instance`);
+
         let newModeStates: ModeStates = {}; // the modes to update
+
         operations.forEach((operation: Operation) => {
 
             switch (operation.directive) {

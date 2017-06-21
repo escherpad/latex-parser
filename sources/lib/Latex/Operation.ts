@@ -48,10 +48,10 @@ export class Operation {
         // do nothing if the initial properties aren't defined
         if (opt_initialProperties === undefined) return;
         if (!(opt_initialProperties instanceof Object))
-            throw new TypeError('"initialProperties" isn\'t an Object instance');
+            throw new TypeError(`"initialProperties" isn't an Object instance`);
         const directive = Directive[opt_initialProperties.directive]; // validate the directive
         if (!directive)
-            throw new TypeError('"initialProperties.directive" isn\'t an Latex.Directive option');
+            throw new TypeError(`"initialProperties.directive" isn't an Latex.Directive option`);
         Object.defineProperty(this, "directive", {value: directive, enumerable: true});
         switch (opt_initialProperties.operand) {
             case GROUP: // if operand is a group
