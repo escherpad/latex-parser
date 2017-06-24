@@ -209,13 +209,19 @@ export interface TypeHavingTeXComment extends TypeHaving {
     type: TypeTeXComment;
 }
 
+export type TypeTeXRaw = "TeXRaw";
+export const typeTeXRaw: TypeTeXRaw = "TeXRaw";
+export interface TypeHavingTeXRaw extends TypeHaving {
+    type: TypeTeXRaw;
+}
+
 export type TypeTeXComm = "TeXComm";
 export const typeTeXComm: TypeTeXComm = "TeXComm";
 export interface TypeHavingTeXComm extends TypeHaving {
     type: TypeTeXComm;
 }
 
-export type TeXRaw = TextHaving; // Raw text.
+export type TeXRaw = TextHaving & TypeHavingTeXRaw; // Raw text.
 export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
 export type TeXComm = NameHaving & ArgumentHaving;
 export type TeXEnv = LaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;

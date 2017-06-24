@@ -1,9 +1,7 @@
-import {Parjs, ReplyKind} from "parjs";
+import {createLanguage, alt, regexp, string} from "parsimmon";
 import {MathType, MathTypeHaving, newTeXComment} from "./Syntax";
-import {ParjsAction, ParjsBasicAction} from "parjs/dist/internal/implementation/action";
-import {Issues, ParsingState} from "parjs/dist/internal/implementation";
-import {ParjsParser} from "parjs/dist/internal";
-import {ArrayHelpers} from "parjs/dist/internal/implementation/functions/helpers";
+import {TeXRaw} from "./Syntax";
+import {newTeXRaw} from "./Syntax";
 
 /** The /LaTeX/ parser.
 
@@ -25,7 +23,7 @@ import {ArrayHelpers} from "parjs/dist/internal/implementation/functions/helpers
  In other words, 'parseLaTeX' is a partial function defined over the
  set of valid LaTeX files, and 'render' is its /left/ inverse.
  */
-// module Text.LaTeX.Base.Parser (
+
 //     -- * The parser
 //     parseLaTeX
 //   , parseLaTeXFile
@@ -82,7 +80,7 @@ export interface ParserConf {
 
  > verbatimEnvironments = ["verbatim"]
  */
-export const defaultParserConf: ParserConf = {
+export const defaultParserConf:ParserConf = {
     verbatimEnvironments: ["verbatim"]
 };
 
@@ -121,6 +119,90 @@ export const defaultParserConf: ParserConf = {
 //
 
 
+function token(parser) {
+    return parser.skip(whitespace);
+}
+
+// Several parsers are just strings with optional whitespace.
+function word(str) {
+    return string(str).thru(token);
+}
+
+const notEOL = regexp(/[^\n]*/);
+const whitespace = regexp(/\s*/m);
+const commentSymbol = word("%");
+
+/** Parser of a single 'LaTeX' constructor, no appending blocks.*/
+export const latexBlockParser = createLanguage({
+    // TODO use character codes
+    lbrace: () => word("{"),
+    rbrace: () => word("}"),
+    lbracket: () => word("["),
+    rbracket: () => word("]"),
+    comma: () => word(","),
+    colon: () => word(":"),
+
+    value: r => alt(
+        r.text            // <?> "text"
+        , r.dolMath         // <?> "inline math ($)"
+        , r.comment         // <?> "comment"
+        , r.text2           // <?> "text2"
+        // , r.try environment // <?> "environment"
+        , r.command         // <?> "command"
+    ).thru(
+        parser => whitespace.then(parser)
+    ),
+
+    /** Text is a sequence on characters that are not non-text*/
+    // TODO use character codes
+    text: regexp(/[$%\\{\]]+}/m)
+        .map(match => newTeXRaw(match)),
+
+    /**Text without stopping on ']'*/
+    // TODO
+
+    //text2:
+    //_ <- char ']'
+    //t <- try (text <|> return (TeXRaw T.empty))
+    //return $ TeXRaw (T.pack "]") <> t
+
+    notRightBraceSequence: r => regexp(/[^}]*/),
+
+    environment: r => alt(r.anonym, r.env),
+    anonym: r => r.lbrace
+        .then(r.notRightBraceSequence)
+        .skip(r.rbrace),
+
+    spaces: r => regexp(/ */)
+        .map(newTeXRaw),
+
+    env: r => word("\\begin")
+    //.then()  // envName
+    //.then() // TODO { bla bla bla bla }
+    // env body
+        .then(r.spaces)
+        .then(word("\\end"))
+    //.then(cmdArgs) // TODO
+    //.then(verbatimEnvironments) // TODO
+
+    /** Comment
+     *
+     *  > % this is a comment`
+     *
+     * NOTE:
+     *
+     *  Q: When a line ends with a comment character like %,
+     *     are spaces ignored at the beginning of the next line?
+     *
+     *  A: Yes; characters of category 10 are ignored at the
+     *     beginning of every line, since every line starts in state N.
+     *
+     * We get this for free with ignoring the spaces
+     */
+    comment: r => r.skip(commentSymbol)
+        .then(notEOL)
+});
+
 // Helpers
 
 export const specialChars = {
@@ -150,9 +232,11 @@ export const specialChars = {
     "\\": true,
     "`": true,
     " ": true
+
+
 };
 
-export function isSpecialCharacter(char: string) {
+export function isSpecialCharacter(char:string) {
     return specialChars.hasOwnProperty(char);
 }
 
@@ -160,94 +244,37 @@ export function isSpecialCharacter(char: string) {
 // peekChar = Just <$> (try $ lookAhead anyChar) <|> pure Nothing
 
 // atEnd :: Parser Bool
-export const atEnd = Parjs.eof;
+//export const atEnd = Parjs.eof;
 
 // takeTill :: (Char -> Bool) -> Parser Text
 // takeTill p = T.pack <$> many (satisfy (not . p))
 
 // Doubles
-export const floating = Parjs.float();
+//export const floating = Parjs.float();
 
 
-const commentSymbol = Parjs.string("%");
-/** Comment
- *
- *  > % this is a comment`
- *
- * NOTE:
- *
- *  Q: When a line ends with a comment character like %,
- *     are spaces ignored at the beginning of the next line?
- *
- *  A: Yes; characters of category 10 are ignored at the
- *     beginning of every line, since every line starts in state N.
- *
- * We get this for free with ignoring the spaces
- */
+export const mathSymbol = word("$");
 
-
-class CommentParseAction extends ParjsAction {
-    isLoud = true;
-    expecting = `a comment line`;
-
-    protected _apply(ps: ParsingState) {
-        const inner = commentSymbol.q
-            .then(Parjs.regexp(/[^\n]*/))
-            .then(Parjs.any(
-                Parjs.string("\n"),
-                Parjs.result("")
-            ).q);
-
-        // let {position} = ps;
-        // let i = 0;
-
-        inner.apply(ps);
-
-        return ps;
-
-        // if (ps.isOk) {
-        //     position = ps.position;
-        //     ArrayHelpers.maybePush(arr, ps.value);
-        //     i++;
-        // }
-        //
-        // if (ps.atLeast(ReplyKind.HardFail)) {
-        //     return;
-        // }
-        // if (i < minSuccesses) {
-        //     ps.kind = i === 0 ? ReplyKind.SoftFail : ReplyKind.HardFail;
-        //     return;
-        // }
-        // ps.value = arr;
-        // // recover from the last failure.
-        // ps.position = position;
-        // ps.kind = ReplyKind.OK;
-    }
-}
-export const comment = new ParjsParser(new CommentParseAction()).withName("comment");
-
-export const mathSymbol = Parjs.string("$");
-
-/**
- * Math
- *
- * TODO return TeXMath
- */
-export const dolMath = latexBlock.many().between(
-    Parjs.string(mathSymbol),
-    Parjs.string(mathSymbol)
-);
-
-function math(t: MathType, string: sMath, string: eMath) {
-    return latexBlock.many().between(
-        Parjs.string(sMath),
-        Parjs.string(eMath)
-    );
-}
-
-
-// Special commands (consisting of one char)
-export const special = Parjs.anyChar();
+///**
+// * Math
+// *
+// * TODO return TeXMath
+// */
+//export const dolMath = latexBlock.many().between(
+//    Parjs.string(mathSymbol),
+//    Parjs.string(mathSymbol)
+//);
+//
+//function math(t: MathType, string: sMath, string: eMath) {
+//    return latexBlock.many().between(
+//        Parjs.string(sMath),
+//        Parjs.string(eMath)
+//    );
+//}
+//
+//
+//// Special commands (consisting of one char)
+//export const special = Parjs.anyChar();
 
 
 // x <- anyChar
