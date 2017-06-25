@@ -1,7 +1,10 @@
-import {createLanguage, alt, regexp, string} from "parsimmon";
-import {MathType, MathTypeHaving, newTeXComment} from "./Syntax";
+// <reference types="../../../../../../types/parsimmon.d.ts" />
+
+import {seq, alt, regexp, string, Parser, lazy, takeWhile} from "parsimmon";
+
+import {LaTeX, MathType, MathTypeHaving, newTeXComment, newTeXMath, TeXComment, TeXMath} from "./Syntax";
 import {TeXRaw} from "./Syntax";
-import {newTeXRaw} from "./Syntax";
+import {newTeXRaw, newTeXMathDol} from "./Syntax";
 
 /** The /LaTeX/ parser.
 
@@ -36,7 +39,9 @@ import {newTeXRaw} from "./Syntax";
 //   , messageString
 //     -- ** Source positions
 //   , SourcePos
-//   , sourceLine
+//   , sourceLineKeep in mind that automatic inclusion is only important if you’re using files with global declarations (as opposed to files declared as modules). If you use an import "foo" statement, for instance, TypeScript may still look through node_modules & node_modules/types folders to find the foo package.
+
+
 //   , sourceColumn
 //   , sourceName
 //     -- * Configuring your parser
@@ -80,7 +85,7 @@ export interface ParserConf {
 
  > verbatimEnvironments = ["verbatim"]
  */
-export const defaultParserConf:ParserConf = {
+export const defaultParserConf: ParserConf = {
     verbatimEnvironments: ["verbatim"]
 };
 
@@ -118,94 +123,87 @@ export const defaultParserConf:ParserConf = {
 // // latexParser = mconcat <$> latexBlockParser `manyTill` eof
 //
 
+export const takeTill = (predicate: ((c: string) => boolean)) => takeWhile((c) => !predicate(c));
 
-function token(parser) {
+const takeTillNewline = regexp(/[^\n]*/);
+const maybeNewline = regexp(/\n?/);
+const whitespace = regexp(/\s*/m);
+const commentSymbol = string("%");
+
+function token(parser: Parser<string>): Parser<string> {
     return parser.skip(whitespace);
 }
 
 // Several parsers are just strings with optional whitespace.
-function word(str) {
+function word(str: string): Parser<string> {
     return string(str).thru(token);
 }
 
-const notEOL = regexp(/[^\n]*/);
-const whitespace = regexp(/\s*/m);
-const commentSymbol = word("%");
 
-/** Parser of a single 'LaTeX' constructor, no appending blocks.*/
-export const latexBlockParser = createLanguage({
-    // TODO use character codes
-    lbrace: () => word("{"),
-    rbrace: () => word("}"),
-    lbracket: () => word("["),
-    rbracket: () => word("]"),
-    comma: () => word(","),
-    colon: () => word(":"),
+const lbrace = word("{");
+const rbrace = word("}");
+const lbracket = word("[");
+const rbracket = word("]");
+const comma = word(",");
+const colon = word(":");
 
-    value: r => alt(
-        r.text            // <?> "text"
-        , r.dolMath         // <?> "inline math ($)"
-        , r.comment         // <?> "comment"
-        , r.text2           // <?> "text2"
-        // , r.try environment // <?> "environment"
-        , r.command         // <?> "command"
-    ).thru(
-        parser => whitespace.then(parser)
-    ),
 
-    /** Text is a sequence on characters that are not non-text*/
-    // TODO use character codes
-    text: regexp(/[$%\\{\]]+}/m)
-        .map(match => newTeXRaw(match)),
+/** Text is a sequence on characters that are not non-text*/
+// TODO use character codes
+export const text = takeTill(c => isNotText(c, notTextDefault))
+    .map(match => newTeXRaw(match));
 
-    /**Text without stopping on ']'*/
+/**Text without stopping on ']'*/
     // TODO
 
-    //text2:
-    //_ <- char ']'
-    //t <- try (text <|> return (TeXRaw T.empty))
-    //return $ TeXRaw (T.pack "]") <> t
+    // text2:
+    // _ <- char ']'
+    // t <- try (text <|> return (TeXRaw T.empty))
+    // return $ TeXRaw (T.pack "]") <> t
 
-    notRightBraceSequence: r => regexp(/[^}]*/),
+const notRightBraceSequence = regexp(/[^}]*/);
+const spaces: Parser<TeXRaw> = regexp(/ */)
+    .map(newTeXRaw);
 
-    environment: r => alt(r.anonym, r.env),
-    anonym: r => r.lbrace
-        .then(r.notRightBraceSequence)
-        .skip(r.rbrace),
+const anonym = lbrace
+    .then(notRightBraceSequence)
+    .skip(rbrace);
 
-    spaces: r => regexp(/ */)
-        .map(newTeXRaw),
-
-    env: r => word("\\begin")
-    //.then()  // envName
-    //.then() // TODO { bla bla bla bla }
+const env = word("\\begin")
+    // .then()  // envName
+    // .then() // TODO { bla bla bla bla }
     // env body
-        .then(r.spaces)
+        .then(spaces)
         .then(word("\\end"))
-    //.then(cmdArgs) // TODO
-    //.then(verbatimEnvironments) // TODO
+    // .then(cmdArgs) // TODO
+    // .then(verbatimEnvironments) // TODO
+;
 
-    /** Comment
-     *
-     *  > % this is a comment`
-     *
-     * NOTE:
-     *
-     *  Q: When a line ends with a comment character like %,
-     *     are spaces ignored at the beginning of the next line?
-     *
-     *  A: Yes; characters of category 10 are ignored at the
-     *     beginning of every line, since every line starts in state N.
-     *
-     * We get this for free with ignoring the spaces
-     */
-    comment: r => r.skip(commentSymbol)
-        .then(notEOL)
-});
+const environment = alt(anonym, env);
+
+
+/** Comment
+ *
+ *  > % this is a comment`
+ *
+ * NOTE:
+ *
+ *  Q: When a line ends with a comment character like %,
+ *     are spaces ignored at the beginning of the next line?
+ *
+ *  A: Yes; characters of category 10 are ignored at the
+ *     beginning of every line, since every line starts in state N.
+ *
+ * We get this for free with ignoring the spaces
+ */
+export const comment: Parser<TeXComment> = commentSymbol
+    .then(takeTillNewline)
+    .skip(maybeNewline)
+    .map(newTeXComment)
+;
 
 // Helpers
-
-export const specialChars = {
+export const specialCharsDefault = {
     "'": true,
     "(": true,
     ")": true,
@@ -232,49 +230,80 @@ export const specialChars = {
     "\\": true,
     "`": true,
     " ": true
-
-
 };
 
-export function isSpecialCharacter(char:string) {
-    return specialChars.hasOwnProperty(char);
+export function isSpecialCharacter(char: string, specialChars?: { [k: string]: boolean }) {
+    const chars = specialChars === undefined ? specialCharsDefault : specialChars;
+    return chars.hasOwnProperty(char);
 }
+
+
+export const notTextDefault = {
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "]": true,
+    "}": true
+};
+
+export function isNotText(char: string, notText?: { [k: string]: boolean }) {
+    const chars = notText === undefined ? notTextDefault : notText;
+    return chars.hasOwnProperty(char);
+}
+
 
 // peekChar :: Parser (Maybe Char)
 // peekChar = Just <$> (try $ lookAhead anyChar) <|> pure Nothing
 
 // atEnd :: Parser Bool
-//export const atEnd = Parjs.eof;
+// export const atEnd = Parjs.eof;
 
 // takeTill :: (Char -> Bool) -> Parser Text
 // takeTill p = T.pack <$> many (satisfy (not . p))
 
 // Doubles
-//export const floating = Parjs.float();
+// export const floating = Parjs.float();
 
 
-export const mathSymbol = word("$");
+export const mathSymbol = string("$");
 
-///**
-// * Math
-// *
-// * TODO return TeXMath
-// */
-//export const dolMath = latexBlock.many().between(
-//    Parjs.string(mathSymbol),
-//    Parjs.string(mathSymbol)
-//);
+
+// whitespace.then(latexBlockParser).skip(whitespace),
+// whitespace.result({})
+
+/** Parser of a single 'LaTeX' constructor, no appending blocks.*/
+export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
+    alt(
+        text              // <?> "text"
+        , dolMath         // <?> "inline math ($)"
+        // , comment         // <?> "comment"
+        // , text2           // <?> "text2"
+        // // , try environment // <?> "environment"
+        // , command         // <?> "command"
+        // , command         // <?> "command"
+    )
+    )
+);
+
+/**
+ * Math
+ */
+export const dolMath = math("Dollar");
+
+function math(t: MathType,
+              sMath = "$",
+              eMath = "$"): Parser<TeXMath> {
+    return string(sMath)
+        .then(latexBlockParser /*many*/)
+        .skip(string(eMath))
+        .map(str => newTeXMath(t, str))
+        ;
+}
+
 //
-//function math(t: MathType, string: sMath, string: eMath) {
-//    return latexBlock.many().between(
-//        Parjs.string(sMath),
-//        Parjs.string(eMath)
-//    );
-//}
-//
-//
-//// Special commands (consisting of one char)
-//export const special = Parjs.anyChar();
+// // Special commands (consisting of one char)
+// export const special = Parjs.anyChar();
 
 
 // x <- anyChar

@@ -81,7 +81,7 @@ export function isMeasureType(x: any): x is MeasureType {
     return measureTypes.hasOwnProperty(x);
 }
 
-interface BuiltInMeasure {
+export interface BuiltInMeasure {
     type: MeasureType;
     value: number;
 }
@@ -93,7 +93,7 @@ export function isBuiltInMeasure(x: any): x is BuiltInMeasure {
 /**
  * You can introduce a 'LaTeX' expression as a measure.
  */
-interface CustomMeasure {
+export interface CustomMeasure {
     expression: LaTeX;
 }
 
@@ -102,7 +102,11 @@ export function isCustomMeasure(x: any): x is CustomMeasure {
 }
 
 /** Different types of syntax for mathematical expressions.*/
-export const mathTypes = {Parentheses: true, Square: true, Dollar: true};
+export const mathTypes = {
+    Parentheses: "Parentheses",
+    Square: "Square",
+    Dollar: "Dollar"
+};
 export type MathType = keyof typeof mathTypes;
 
 // deriving (Data, Eq, Generic, Show, Typeable)
@@ -125,8 +129,8 @@ export interface NameHaving {
 
 export function isNameHaving(x: any, name?: string): x is NameHaving {
     return x !== undefined && (name === undefined
-        ? typeof x.name === "string"
-        : name === x.name
+                ? typeof x.name === "string"
+                : name === x.name
         );
 }
 
@@ -172,10 +176,10 @@ export function isArgumentHaving(x: any): x is ArgumentHaving {
 /**
  * Types of @LaTeX@ blocks.
  */
-type LaTeX = TeXSeq |
+export type LaTeX = TeXSeq |
     LaTeXNoSeq;
 
-type LaTeXNoSeq = TeXRaw |
+export type LaTeXNoSeq = TeXRaw |
     TeXComm |
     TeXEnv |
     TeXMath |
@@ -215,15 +219,21 @@ export interface TypeHavingTeXRaw extends TypeHaving {
     type: TypeTeXRaw;
 }
 
-export type TypeTeXComm = "TeXComm";
+export type TypeTeXComm = "TeXComm" | TypeTeXCommS;
 export const typeTeXComm: TypeTeXComm = "TeXComm";
 export interface TypeHavingTeXComm extends TypeHaving {
     type: TypeTeXComm;
 }
 
+export type TypeTeXCommS = "TeXCommS";
+export const typeTeXCommS: TypeTeXCommS = "TeXCommS";
+export interface TypeHavingTeXCommS extends TypeHaving {
+    type: TypeTeXCommS;
+}
+
 export type TeXRaw = TextHaving & TypeHavingTeXRaw; // Raw text.
 export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
-export type TeXComm = NameHaving & ArgumentHaving;
+export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
 export type TeXEnv = LaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
 export type TeXMath = LaTeXHaving & MathTypeHaving; // Mathematical expressions.
 export type TeXBraces = LaTeXHaving;
@@ -256,7 +266,9 @@ export interface TeXEmpty {
  * the end.
  */
 export interface TeXCommS extends TeXComm {
-    arguments: [];
+    // Must be empty, but can't express it in the type :(
+    // arguments: [];
+    type: TypeTeXCommS;
 }
 
 
@@ -609,8 +621,8 @@ export const getPreamble = (l: LaTeX): LaTeX => {
 //
 
 
-export function isTypeHaving(x: any, t?: string): x is TypeHaving {
-    return t === undefined ? typeof x.type === "string" : x.type === t;
+export function isTypeHaving(x: any, ...anyOfTypes: string[]): x is TypeHaving {
+    return anyOfTypes.length === 0 ? typeof x.type === "string" : anyOfTypes.some(type => x.type === type);
 }
 
 export function isLaTeXBlock(x: any): x is LaTeX {
@@ -636,7 +648,7 @@ export function isTeXRaw(x: any): x is TeXRaw {
 export function isTeXComm(x: any): x is TeXComm {
     return isNameHaving(x)
         && isArgumentHaving(x)
-        && isTypeHaving(x, typeTeXComm)
+        && isTypeHaving(x, typeTeXComm, typeTeXCommS)
         ;
 }
 
@@ -709,18 +721,29 @@ export function newMParArg(l: LaTeX[]): MParArg {
 /**
  Constructor for commands with no arguments.
  */
-export function newCommandS(name: string, argument: TeXArg): TeXCommS {
+export function newCommandS(name: string): TeXCommS {
     return {
         name,
-        arguments: [argument]
+        arguments: [],
+        type: typeTeXCommS
     };
 }
 
 export function newTeXRaw(text: string): TeXRaw {
     return {
-        text
+        text,
+        type: typeTeXRaw
     };
 }
+
+export function newTeXMath(type: MathType, latex: LaTeX): TeXMath {
+    return {
+        latex,
+        type
+    };
+}
+
+export const newTeXMathDol: (l: LaTeX) => TeXMath = newTeXMath.bind(undefined, "Dollar");
 
 export function newTeXComment(text: string): TeXComment {
     return {
@@ -734,7 +757,9 @@ export function newTeXComment(text: string): TeXComment {
  * Second, its arguments.*/
 export function newCommand(name: string, ...args: TeXArg[]): TeXComm {
     return {
-        name, arguments: args
+        name,
+        arguments: args,
+        type: typeTeXComm
     };
 }
 
