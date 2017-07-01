@@ -136,6 +136,11 @@ export function testProperties(target: TargetObject,
     return true; // return true if all the defined properties are the same
 }
 
+export const mustBeNumber = (a: any, msg?: string): number => {
+    if (!(isNumber(a)))
+        throw new TypeError(msg ? msg : "Expected number");
+    return a;
+};
 
 export function isNumber(x: any): x is number {
     return typeof x === "number";
@@ -169,12 +174,14 @@ export function mustBeArray(a: any, msg?: string): any[] {
     return a;
 }
 
+
 //noinspection JSUnusedGlobalSymbols
 export function isArray(x: any): x is any[] {
     return x.constructor === Array;
 }
 
 export const mconcat = <T>(mappend: (x: T, y: T) => T, ...args: T[]) => args.reduceRight(mappend);
+
 export const snd = <T, U>(pair: [T, U]) => pair[1];
 
 

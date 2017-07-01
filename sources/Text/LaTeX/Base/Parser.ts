@@ -1,10 +1,33 @@
 // <reference types="../../../../../../types/parsimmon.d.ts" />
 
-import {seq, alt, regexp, string, Parser, lazy, takeWhile} from "parsimmon";
+import {
+    alt, regexp,
+    string, Parser, lazy, takeWhile,
+    Success, Result, seqMap,
+    ResultInterface,
+    makeSuccess, Failure
+} from "parsimmon";
 
-import {LaTeX, MathType, MathTypeHaving, newTeXComment, newTeXMath, TeXComment, TeXMath} from "./Syntax";
+import {
+    FixArg,
+    LaTeX, mappend,
+    MathType, MOptArg,
+    newFixArg,
+    newMOptArg,
+    newOptArg,
+    newTeXComm, newTeXComment, newTeXMath, OptArg, TeXArg, TeXComm,
+    TeXComment,
+    TeXEmpty,
+    TeXMath, TeXSeq
+} from "./Syntax";
 import {TeXRaw} from "./Syntax";
-import {newTeXRaw, newTeXMathDol} from "./Syntax";
+import {newTeXRaw} from "./Syntax";
+import Parsimmon = require("parsimmon");
+import {
+    mconcat,
+    mustBeNumber,
+    mustNotBeUndefined
+} from "../../../lib/Utils";
 
 /** The /LaTeX/ parser.
 
@@ -89,7 +112,8 @@ export const defaultParserConf: ParserConf = {
     verbatimEnvironments: ["verbatim"]
 };
 
-/** Parser with 'Text' input and 'ParserConf' environment.
+/**
+ * Parser with 'Text' input and 'ParserConf' environment.
  */
 // type Parser<T> = Parsec Text ParserConf;
 
@@ -129,6 +153,131 @@ const takeTillNewline = regexp(/[^\n]*/);
 const maybeNewline = regexp(/\n?/);
 const whitespace = regexp(/\s*/m);
 const commentSymbol = string("%");
+/**
+ Returns the sorted set union of two arrays of strings. Note that if both
+ arrays are empty, it simply returns the first array, and if exactly one
+ array is empty, it returns the other one unsorted. This is safe because
+ expectation arrays always start as [] or [x], so as long as we merge with
+ this function, we know they stay in sorted order.
+ */
+function unsafeUnion(xs: any[], ys: any[]) {
+    // Exit early if either array is empty (common case)
+    const xn = xs.length;
+    const yn = ys.length;
+    if (xn === 0) {
+        return ys;
+    } else if (yn === 0) {
+        return xs;
+    }
+    // Two non-empty arrays: do the full algorithm
+    const obj: any = {};
+    for (let i = 0; i < xn; i++) {
+        obj[xs[i]] = true;
+    }
+    for (let j = 0; j < yn; j++) {
+        obj[ys[j]] = true;
+    }
+    const keys = [];
+    for (const k in obj) {
+        if (obj.hasOwnProperty(k)) {
+            keys.push(k);
+        }
+    }
+    keys.sort();
+    return keys;
+}
+
+function mergeReplies<T, U>(result: ResultInterface<T>, last?: ResultInterface<U>): ResultInterface<T> {
+    if (!last) {
+        return result;
+    }
+    if (result.furthest > last.furthest) {
+        return result;
+    }
+    const expected = (result.furthest === last.furthest)
+        ? unsafeUnion(result.expected, last.expected)
+        : last.expected;
+    return {
+        status: result.status,
+        index: result.index,
+        value: result.value,
+        furthest: last.furthest,
+        expected: expected
+    };
+}
+
+function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: V, res: (T)) => V, initial: V) {
+    return Parsimmon(function (input: string, i: number): Result<V> {
+        let accum: V = initial;
+
+        let j = 0;
+        let result: ResultInterface<T> | undefined = undefined;
+
+        let lengthUntilEnd = -1;
+
+        for (let o = i; o < input.length; o++) {
+            const endCodonFound = till._(input, o);
+            if (endCodonFound.status) {
+                input = input.substring(0, o);
+                lengthUntilEnd = mustBeNumber(endCodonFound.index);
+                break;
+            }
+        }
+        if (lengthUntilEnd < 0) return Parsimmon.makeFailure(i, "No end codon found: " + till);
+
+        while (i < input.length) {
+            const bigParse = manyOf._(input, i);
+            result = mustNotBeUndefined(mergeReplies(bigParse, result));
+            if (isNotOk(result)) {
+                return result;
+                // TODO fail? test
+            }
+            j++;
+            const value: T = mustNotBeUndefined(result.value);
+
+            accum = map(accum, value);
+
+            i = mustBeNumber(result.index);
+        }
+        i = lengthUntilEnd;
+        const result2: Success<V> = makeSuccess(i, accum);
+        return mustBeOk(mergeReplies(result2, result));
+    });
+}
+function manyTill<T, U>(manyOf: Parser<T>, till: Parser<U>) {
+    return manyTillAndMap(manyOf, till, (a: T[], el: T) => a.concat([el]), <T[]>[]);
+
+    // return Parsimmon(function (input: string, i: number): Result<T[]> {
+    //     const accum: T[] = [];
+    //
+    //     let j = 0;
+    //     let result: ResultInterface<T> | undefined = undefined;
+    //
+    //     let endCodonFound = till._(input, i);
+    //     if (endCodonFound.status) {
+    //         i = mustBeNumba(endCodonFound.index);
+    //     }
+    //     while (!endCodonFound.status) {
+    //         const bigParse = manyOf._(input, i);
+    //         result = mustNotBeUndefined(mergeReplies(bigParse, result));
+    //         if (isNotOk(result)) {
+    //             return result;
+    //         }
+    //         j++;
+    //         const value: T = mustNotBeUndefined(result.value);
+    //         accum.push(value);
+    //         i = mustBeNumba(result.index);
+    //         endCodonFound = till._(input, i);
+    //         if (endCodonFound.status) {
+    //             i = mustBeNumba(endCodonFound.index);
+    //             break;
+    //         }
+    //     }
+    //
+    //     const result2: Success<T[]> = makeSuccess(i, accum);
+    //     return mustBeOk(mergeReplies(result2, result));
+    // });
+}
 
 function token(parser: Parser<string>): Parser<string> {
     return parser.skip(whitespace);
@@ -140,18 +289,43 @@ function word(str: string): Parser<string> {
 }
 
 
-const lbrace = word("{");
-const rbrace = word("}");
-const lbracket = word("[");
-const rbracket = word("]");
-const comma = word(",");
-const colon = word(":");
+const lbrace = "{";
+const rbrace = "}";
+const lbracket = "[";
+const rbracket = "]";
+const comma = ",";
+const colon = ":";
 
-
+function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
+    return Parsimmon((str, i) => {
+        const firstChar = str.charAt(i);
+        if (i >= str.length || till(firstChar)) {
+            return Parsimmon.makeFailure(i, "text character");
+        } else {
+            const strz = [firstChar];
+            i++;
+            let char = str.charAt(i);
+            while (!till(char) && i < str.length) {
+                strz.push(char);
+                i++;
+                char = str.charAt(i);
+            }
+            return Parsimmon.makeSuccess(i, strz.join(""));
+        }
+    });
+}
 /** Text is a sequence on characters that are not non-text*/
 // TODO use character codes
-export const text = takeTill(c => isNotText(c, notTextDefault))
-    .map(match => newTeXRaw(match));
+export const text = takeAtLeastOneTill(isNotText)
+    .map(match => newTeXRaw(match))
+;
+
+/**
+ * Text without stopping on ']'
+ */
+export const text2 = takeAtLeastOneTill(isNotText)
+    .map(match => newTeXRaw(match))
+;
 
 /**Text without stopping on ']'*/
     // TODO
@@ -165,9 +339,9 @@ const notRightBraceSequence = regexp(/[^}]*/);
 const spaces: Parser<TeXRaw> = regexp(/ */)
     .map(newTeXRaw);
 
-const anonym = lbrace
+const anonym = word(lbrace)
     .then(notRightBraceSequence)
-    .skip(rbrace);
+    .skip(word(rbrace));
 
 const env = word("\\begin")
     // .then()  // envName
@@ -196,10 +370,11 @@ const environment = alt(anonym, env);
  *
  * We get this for free with ignoring the spaces
  */
-export const comment: Parser<TeXComment> = commentSymbol
-    .then(takeTillNewline)
-    .skip(maybeNewline)
-    .map(newTeXComment)
+export const comment: Parser<TeXComment> =
+    commentSymbol
+        .then(takeTillNewline)
+        .skip(maybeNewline)
+        .map(newTeXComment)
 ;
 
 // Helpers
@@ -247,44 +422,122 @@ export const notTextDefault = {
     "}": true
 };
 
+export const notTextDefaultAndNotClosingBracket = Object.assign({"]": true}, notTextDefault);
+
 export function isNotText(char: string, notText?: { [k: string]: boolean }) {
     const chars = notText === undefined ? notTextDefault : notText;
     return chars.hasOwnProperty(char);
 }
 
-
-// peekChar :: Parser (Maybe Char)
-// peekChar = Just <$> (try $ lookAhead anyChar) <|> pure Nothing
-
-// atEnd :: Parser Bool
-// export const atEnd = Parjs.eof;
-
-// takeTill :: (Char -> Bool) -> Parser Text
-// takeTill p = T.pack <$> many (satisfy (not . p))
-
-// Doubles
-// export const floating = Parjs.float();
-
-
+//noinspection JSUnusedGlobalSymbols
 export const mathSymbol = string("$");
 
-
-// whitespace.then(latexBlockParser).skip(whitespace),
-// whitespace.result({})
+export const commandSymbol = string("\\");
 
 /** Parser of a single 'LaTeX' constructor, no appending blocks.*/
 export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
     alt(
         text              // <?> "text"
         , dolMath         // <?> "inline math ($)"
-        // , comment         // <?> "comment"
-        // , text2           // <?> "text2"
-        // // , try environment // <?> "environment"
-        // , command         // <?> "command"
-        // , command         // <?> "command"
+        , comment         // <?> "comment"
+        , text2           // <?> "text2"
+        // , try environment // <?> "environment" // TODO parse environment
+        , command         // <?> "command"
     )
     )
 );
+
+/**
+ * Special commands (consisting of one char)
+ */
+export const specialChar = Parsimmon.test(isSpecialCharacter);
+
+function isUppercaseAlph(c: string) {
+    return c >= "A" && c <= "Z";
+}
+
+function isLowercaseAlph(c: string) {
+    return c >= "a" && c <= "z";
+}
+
+export const endCmd = (c: string) => !isLowercaseAlph(c) && !isUppercaseAlph(c);
+
+const openingBrace = string("{");
+const closingBrace = string("}");
+//noinspection JSUnusedLocalSymbols
+const isClosingBrace = (str: string) => str === ("}");
+
+export const fixArg: Parser<FixArg> = openingBrace
+    .then(
+        manyTill(latexBlockParser, closingBrace)
+    ).map(newFixArg)
+;
+
+const openingbracket = string(lbracket);
+const closingbracket = string(rbracket);
+const isClosingbracket = (str: string) => str === (rbracket);
+
+export const optArg: Parser<MOptArg | OptArg> = openingbracket
+    .then(
+        manyTill(latexBlockParser, closingbracket)
+    ).map(newOptArg);
+
+export const cmdArg: Parser<TeXArg> = alt(
+    fixArg,
+    optArg
+    // => newTeXArg(str)
+);
+
+/**
+ * Command Arguments
+ */
+export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
+    string("{}").map(() => []),
+
+    cmdArg.map(s => s).atLeast(0).map(e => {
+        e.map(console.log);
+        return e;
+    })
+).map(e => e);
+
+
+// cmdArgs = try (string "{}" >> return (Just []))
+// <|> fmap Just (try $ many1 cmdArg)
+// <|> return Nothing
+
+// cmdArg :: Parser TeXArg
+// cmdArg = do
+// c <- char '[' <|> char '{'
+// let e = case c of
+// '[' -> "]"
+// '{' -> "}"
+// _   -> error "this cannot happen!"
+// b <- mconcat <$> manyTill latexBlockParser (string e)
+// case c of
+// '[' -> return $ OptArg b
+// '{' -> return $ FixArg b
+// _   -> error "this cannot happen!"
+
+/**
+ * Command
+ */
+export const command: Parser<TeXComm | TeXEmpty> = alt(
+    commandSymbol.then(Parsimmon.eof).map(() => {
+        return {};
+    }),
+
+    seqMap(
+        commandSymbol,
+        alt(specialChar, takeTill(endCmd)),
+        cmdArgs,
+
+        function (ignored, name, argz) {
+            return argz !== undefined ? newTeXComm(name, ...argz) : newTeXComm(name);
+        }
+    )
+).map(res => {
+    return res;
+});
 
 /**
  * Math
@@ -295,23 +548,20 @@ function math(t: MathType,
               sMath = "$",
               eMath = "$"): Parser<TeXMath> {
     return string(sMath)
-        .then(latexBlockParser /*many*/)
+        .then(latexBlockParser.many())
         .skip(string(eMath))
         .map(str => newTeXMath(t, str))
         ;
 }
 
-//
-// // Special commands (consisting of one char)
-// export const special = Parjs.anyChar();
+export function isOk<T>(parse?: ResultInterface<T>): parse is Success<T> {
+    return parse !== undefined && parse.status === true;
+}
 
-
-// x <- anyChar
-// case x of
-// '('  -> math Parentheses "\\)"
-// '['  -> math Square      "\\]"
-// '{'  -> lbrace
-// '}'  -> rbrace
-// '|'  -> vert
-// '\\' -> lbreak
-// _    -> commS [x]
+export function isNotOk<T>(parse?: any): parse is Failure {
+    return parse !== undefined && parse.status === false;
+}
+export function mustBeOk<T>(parse?: ResultInterface<T>): Success<T> {
+    if (!isOk(parse)) throw new Error("Expected parse to be success: " + JSON.stringify(parse));
+    return parse;
+}

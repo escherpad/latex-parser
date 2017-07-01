@@ -285,7 +285,8 @@ export type TeXArg = FixArg |
 // deriving (Data, Eq, Generic, Show, Typeable)
 
 
-export type FixArg = LaTeXHaving & TypeHavingFixArg; // Fixed argument.
+export type FixArg = MultipleLaTeXHaving & TypeHavingFixArg; // Fixed argument.
+
 export type OptArg = LaTeXHaving & TypeHavingOptArg; // Optional argument.
 export type SymArg = LaTeXHaving & TypeHavingSymArg; // An argument enclosed between @\<@ and @\>@.
 export type ParArg = LaTeXHaving & TypeHavingParArg; // An argument enclosed between @(@ and @)@.
@@ -682,8 +683,7 @@ export function isTeXComment(x: any): x is TeXComment {
 
 
 export function isTeXSeq(x: any): x is TeXSeq {
-    return x !== undefined && isLaTeXBlock(x.head)
-        && isLaTeXBlock(x.tail)
+    return x !== undefined && x.head && x.tail
         && isTypeHaving(x, typeTeXSeq)
         ;
 }
@@ -696,11 +696,11 @@ export function isTeXEmpty(e: any) {
 // constructors
 //
 
-export function newFixArg(l: LaTeX): FixArg {
+export function newFixArg(l: LaTeX[]): FixArg {
     return {type: "FixArg", latex: l};
 }
-export function newOptArg(l: LaTeX): OptArg {
-    return {type: "OptArg", latex: l};
+export function newOptArg(l: LaTeX[]): MOptArg | OptArg {
+    return l.length === 1 ? {type: "OptArg", latex: l[0]} : {type: "MOptArg", latex: l};
 }
 export function newSymArg(l: LaTeX): SymArg {
     return {type: "SymArg", latex: l};
@@ -752,10 +752,11 @@ export function newTeXComment(text: string): TeXComment {
     };
 }
 
+
 /** Constructor for commands.
  * First argument is the name of the command.
  * Second, its arguments.*/
-export function newCommand(name: string, ...args: TeXArg[]): TeXComm {
+export function newTeXComm(name: string, ...args: TeXArg[]): TeXComm {
     return {
         name,
         arguments: args,

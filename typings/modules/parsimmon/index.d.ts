@@ -9,6 +9,8 @@ declare module "parsimmon" {
 //                 Benny van Reeven <https://github.com/bvanreeven>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
+    export type Action<T> = (input: string, i: number) => Parsimmon.Result<T>;
+
     /**
      * **NOTE:** You probably will never need to use this function. Most parsing
      * can be accomplished using `Parsimmon.regexp` and combination with
@@ -42,7 +44,7 @@ declare module "parsimmon" {
      * //=> {status: true, value: ['a', ['c', 'c', 'c', 'c', 'c']]}
      * ```
      */
-    function Parsimmon<T>(fn: (input: string, i: number) => Parsimmon.Result<T>): Parsimmon.Parser<T>;
+    function Parsimmon<T>(fn: Action<T>): Parsimmon.Parser<T>;
 
     namespace Parsimmon {
         export type StreamType = string;
@@ -64,18 +66,29 @@ declare module "parsimmon" {
 
         export type Result<T> = Success<T> | Failure;
 
-        export interface Success<T> {
+        export interface Success<T> extends ResultInterface<T> {
             status: true;
             value: T;
         }
 
-        export interface Failure {
+        export interface Failure extends ResultInterface<undefined> {
             status: false;
             expected: string[];
             index: Index;
+            value: undefined;
+        }
+
+        export interface ResultInterface<T> {
+            status: boolean;
+            index: Index | number;
+            value?: T;
+            furthest: number;
+            expected: string[];
         }
 
         export interface Parser<T> {
+            _: Action<T>;
+
             /**
              * parse the string
              */
@@ -205,6 +218,7 @@ declare module "parsimmon" {
          * result in an error being thrown.
          */
         export function regexp(myregex: RegExp, group?: number): Parser<string>;
+
         // export function createLanguage<T>(any: any): any;
 
         /**
