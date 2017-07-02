@@ -2,8 +2,8 @@ import "mocha";
 
 import {expect} from "chai";
 import {
-    mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXMath, newTeXMathDol, newTeXRaw,
-    TeXComment
+    mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXEnv, newTeXMath, newTeXMathDol, newTeXRaw,
+    TeXComment, TeXRaw
 } from "../../../../sources/Text/LaTeX/Base/Syntax";
 import {
     fixArg,
@@ -27,45 +27,16 @@ describe("Parser", () => {
 `
             )).value).to.deep.equal(
                 [
-                    {
-                        "name": "documentclass",
-                        "arguments": [
-                            {
-                                "type": "FixArg", "latex": [
-                                {
-                                    "text": "article",
-                                    "type": "TeXRaw"
-                                }
-                            ]
-                            }
-                        ],
-                        "type": "TeXComm"
-                    },
-                    {
-                        "text": "\n\n",
-                        "type": "TeXRaw"
-                    },
-                    {
-                        "name": "newenvironment",
-                        "arguments": [
-                            {
-                                "type": "FixArg", "latex": [{"text": "foo", "type": "TeXRaw"}]
-                            }
-                        ],
-                        "type": "TeXComm"
-                    },
-                    [
-                        ["}{"],
-                        [{"text": "center", "type": "TeXRaw"}]
-                    ], {"text": "\n\n", "type": "TeXRaw"}, {
-                    "name": "begin",
-                    "arguments": [{"type": "FixArg", "latex": [{"text": "document", "type": "TeXRaw"}]}],
-                    "type": "TeXComm"
-                }, {"text": "\n\n", "type": "TeXRaw"}, {
-                    "name": "end",
-                    "arguments": [{"type": "FixArg", "latex": [{"text": "document", "type": "TeXRaw"}]}],
-                    "type": "TeXComm"
-                }, {"text": "\n", "type": "TeXRaw"}
+                    newTeXComm("documentclass", newFixArg([newTeXRaw("article")])),
+                    newTeXRaw("\n\n"),
+                    newTeXComm("newenvironment",
+                        newFixArg([newTeXRaw("foo")]),
+                        newFixArg([newTeXComm("begin", newFixArg([newTeXRaw("center")]))]),
+                        newFixArg([newTeXComm("end", newFixArg([newTeXRaw("center")]))])
+                    ),
+                    newTeXRaw("\n\n"),
+                    newTeXEnv("document", [newTeXRaw("\n\n")]),
+                    newTeXRaw("\n"),
                 ]
             );
         });

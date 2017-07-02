@@ -240,7 +240,7 @@ export interface TypeHavingTeXCommS extends TypeHaving {
 export type TeXRaw = TextHaving & TypeHavingTeXRaw; // Raw text.
 export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
 export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
-export type TeXEnv = LaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
+export type TeXEnv = MultipleLaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
 export type TeXMath = LaTeXHaving & MathTypeHaving; // Mathematical expressions.
 export type TeXBraces = LaTeXHaving & TypeHavingTeXBraces;
 
@@ -473,7 +473,6 @@ export const matchEnv = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg
         if (f(l.name)) {
             const head: [string, TeXArg[], LaTeX][] = [[l.name, l.arguments, l.latex]];
             const concat: [string, TeXArg[], LaTeX][] = head.concat(tail);
-            console.log(concat);
             return concat;
         } else {
             return tail;
@@ -780,10 +779,10 @@ export function newTeXComm(name: string, ...args: TeXArg[]): TeXComm {
 /**
  * Constructor for environments.
  * First argument is the name of the environment.
- Second, its content.
- Third, its arguments.
+ * Second, its content.
+ * Third, its arguments.
  */
-export function newTeXEnv(name: string, latex: LaTeX, ...args: TeXArg[]): TeXEnv {
+export function newTeXEnv(name: string, latex: LaTeX[], ...args: TeXArg[]): TeXEnv {
     return {
         name,
         latex,

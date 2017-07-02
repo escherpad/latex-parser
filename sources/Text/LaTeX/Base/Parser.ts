@@ -5,7 +5,7 @@ import {
     string, Parser, lazy, takeWhile,
     Success, Result, seqMap,
     ResultInterface,
-    makeSuccess, Failure
+    makeSuccess, Failure, seq
 } from "parsimmon";
 
 import {
@@ -15,9 +15,9 @@ import {
     newFixArg,
     newMOptArg,
     newOptArg,
-    newTeXComm, newTeXComment, newTeXMath, OptArg, TeXArg, TeXComm,
+    newTeXComm, newTeXComment, newTeXEnv, newTeXMath, OptArg, TeXArg, TeXComm,
     TeXComment,
-    TeXEmpty,
+    TeXEmpty, TeXEnv,
     TeXMath, TeXSeq
 } from "./Syntax";
 import {TeXRaw} from "./Syntax";
@@ -430,7 +430,7 @@ export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
         , dolMath         // <?> "inline math ($)"
         , comment         // <?> "comment"
         , text2           // <?> "text2"
-        , environment     // <?> "environment" // TODO "try"
+        , environment     // <?> "environment"
         , command         // <?> "command"
     )
     )
@@ -444,28 +444,32 @@ const anonym = string(lbrace)
     )
     .skip(string(rbrace));
 
-const env = word("\\begin")
-    .then(string(lbrace))
-    .skip(spaces)
-    .then(regexp(/[a-zA-Z]+/))  // envName
-    .skip(spaces)
-    .then(string(rbrace))
+export const env = Parsimmon(function (input: string, i: number): Result<TeXEnv> {
+    const beginFound = string("\\begin")
+        .then(string(lbrace))
+        .then(spaces)
+        .then(regexp(/[a-zA-Z]+/))  // envName
+        .skip(spaces)
+        .skip(string(rbrace))
+        ._(input, i);
+    if (isNotOk(beginFound))
+        return beginFound;
 
-    // env body
-    .then(
-        manyTill(
-            regexp(/.+/),
-            string("\\end")
-        )
-    ).map(res => {
-            console.log("env:");
-            console.log(res);
-            return res;
-        }
-    )
-;
+    i = mustBeNumber(beginFound.index);
+    const envName: string = beginFound.value;
 
-const environment = alt(anonym, env);
+    // TODO args
+
+    return manyTill(latexBlockParser, string("\\end")
+        .then(string(lbrace))
+        .then(spaces)
+        .then(string(envName))
+        .then(spaces)
+        .then(string(rbrace))
+    ).map(latex => newTeXEnv(envName, latex))._(input, i);
+});
+
+export const environment = alt(anonym, env);
 
 /**
  * Special commands (consisting of one char)
@@ -510,10 +514,7 @@ export const cmdArg: Parser<TeXArg> = alt(
 export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
     string("{}").map(() => []),
 
-    cmdArg.map(s => s).atLeast(0).map(e => {
-        e.map(console.log);
-        return e;
-    })
+    cmdArg.map(s => s).atLeast(0)
 ).map(e => e);
 
 

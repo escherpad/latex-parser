@@ -2,13 +2,13 @@ import "mocha";
 
 import {expect} from "chai";
 import {
-    mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXMath, newTeXMathDol, newTeXRaw,
+    mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXEnv, newTeXMath, newTeXMathDol, newTeXRaw,
     TeXComment
 } from "../../../../sources/Text/LaTeX/Base/Syntax";
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    text
+    text, environment
 } from "../../../../sources/Text/LaTeX/Base/Parser";
 import {custom, Result, Success} from "parsimmon";
 
@@ -23,6 +23,19 @@ describe("Parser", () => {
             newTeXComment("a")
         );
         expect(comment.parse("%a\n ").status).to.be.false;
+    });
+
+    describe("environment", () => {
+        it("must parse named env", () => {
+            expect(mustBeOk(environment.parse(`\\begin{document}
+
+\\end{document}`)).value).to.deep.equal(
+                newTeXEnv("document", [newTeXRaw("\n\n")])
+            );
+        });
+        it("must parse anonymous", () => {
+
+        });
     });
 
     it("cmd", () => {
