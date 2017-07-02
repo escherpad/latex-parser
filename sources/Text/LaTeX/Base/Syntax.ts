@@ -207,6 +207,12 @@ export interface TypeHavingTeXEnv extends TypeHaving {
     type: TypeTeXEnv;
 }
 
+export type TypeTeXBraces = "TeXBraces";
+export const typeTeXBraces: TypeTeXBraces = "TeXBraces";
+export interface TypeHavingTeXBraces extends TypeHaving {
+    type: TypeTeXBraces;
+}
+
 export type TypeTeXComment = "TeXComment";
 export const typeTeXComment: TypeTeXComment = "TeXComment";
 export interface TypeHavingTeXComment extends TypeHaving {
@@ -236,7 +242,7 @@ export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
 export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
 export type TeXEnv = LaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
 export type TeXMath = LaTeXHaving & MathTypeHaving; // Mathematical expressions.
-export type TeXBraces = LaTeXHaving;
+export type TeXBraces = LaTeXHaving & TypeHavingTeXBraces;
 
 /**
  An expression between braces.
@@ -740,6 +746,13 @@ export function newTeXMath(type: MathType, latex: LaTeX): TeXMath {
     return {
         latex,
         type
+    };
+}
+
+export function newTeXBraces(latex: LaTeX): TeXBraces {
+    return {
+        latex,
+        type: typeTeXBraces
     };
 }
 

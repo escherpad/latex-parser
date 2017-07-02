@@ -36,6 +36,23 @@ describe("Parser", () => {
                 newFixArg([newTeXRaw("fix")])
             )
         );
+        expect(mustBeOk(command.parse(`\\aCmd{fix1}{fix2}`)).value).to.deep.equal(
+            newTeXComm("aCmd",
+                newFixArg([newTeXRaw("fix1")]),
+                newFixArg([newTeXRaw("fix2")])
+            )
+        );
+        expect(mustBeOk(command.parse(`\\aCmd{\\fix{fix11}}`)).value).to.deep.equal(
+            newTeXComm("aCmd",
+                newFixArg([newTeXComm("fix", newFixArg([newTeXRaw("fix11")]))])
+            )
+        );
+        expect(mustBeOk(command.parse(`\\aCmd{\\fixOne{1}}{\\fixTwo{2}}`)).value).to.deep.equal(
+            newTeXComm("aCmd",
+                newFixArg([newTeXComm("fixOne", newFixArg([newTeXRaw("1")]))]),
+                newFixArg([newTeXComm("fixTwo", newFixArg([newTeXRaw("2")]))])
+            )
+        );
 
         // expect(mustBeOk(comment.parse("%a\n")).value).to.deep.equal(
         //     newTeXComment("a")
@@ -103,14 +120,13 @@ describe("Parser", () => {
         });
 
         it("dolMath", () => {
-            // todo
-            // expect(mustBeOk(dolMath.parse(`$$`)).value).to.deep.equal(
-            //     newTeXMathDol({})
-            // );
+            expect(mustBeOk(dolMath.parse(`$$`)).value).to.deep.equal(
+                newTeXMathDol([])
+            );
 
-            // expect(mustBeOk(dolMath.parse(`$ $`)).value).to.deep.equal(
-            //     newTeXMathDol(newTeXRaw(" "))
-            // );
+            expect(mustBeOk(dolMath.parse(`$ $`)).value).to.deep.equal(
+                newTeXMathDol([newTeXRaw(" ")])
+            );
 
             expect(mustBeOk(dolMath.parse(`$ lol $`)).value).to.deep.equal(
                 newTeXMathDol([newTeXRaw(" lol ")])

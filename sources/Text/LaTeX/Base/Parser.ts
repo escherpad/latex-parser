@@ -213,17 +213,17 @@ function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: 
         let j = 0;
         let result: ResultInterface<T> | undefined = undefined;
 
-        let lengthUntilEnd = -1;
-
-        for (let o = i; o < input.length; o++) {
-            const endCodonFound = till._(input, o);
-            if (endCodonFound.status) {
-                input = input.substring(0, o);
-                lengthUntilEnd = mustBeNumber(endCodonFound.index);
-                break;
-            }
-        }
-        if (lengthUntilEnd < 0) return Parsimmon.makeFailure(i, "No end codon found: " + till);
+        // let lengthUntilEnd = -1;
+        //
+        // for (let o = i; o < input.length; o++) {
+        //     const endCodonFound = till._(input, o);
+        //     if (endCodonFound.status) {
+        //         input = input.substring(0, o);
+        //         lengthUntilEnd = mustBeNumber(endCodonFound.index);
+        //         break;
+        //     }
+        // }
+        // if (lengthUntilEnd < 0) return Parsimmon.makeFailure(i, "No end codon found: " + till);
 
         while (i < input.length) {
             const bigParse = manyOf._(input, i);
@@ -238,8 +238,13 @@ function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: 
             accum = map(accum, value);
 
             i = mustBeNumber(result.index);
+            const endCodonFound = till._(input, i);
+            if (endCodonFound.status) {
+                i = mustBeNumber(endCodonFound.index);
+                break;
+            }
         }
-        i = lengthUntilEnd;
+        // i = lengthUntilEnd;
         const result2: Success<V> = makeSuccess(i, accum);
         return mustBeOk(mergeReplies(result2, result));
     });
@@ -296,6 +301,10 @@ const rbracket = "]";
 const comma = ",";
 const colon = ":";
 
+const openingBracket = string(lbracket);
+const closingBracket = string(rbracket);
+const isClosingbracket = (str: string) => str === (rbracket);
+
 function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
     return Parsimmon((str, i) => {
         const firstChar = str.charAt(i);
@@ -314,6 +323,7 @@ function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
         }
     });
 }
+
 /** Text is a sequence on characters that are not non-text*/
 // TODO use character codes
 export const text = takeAtLeastOneTill(isNotText)
@@ -323,37 +333,13 @@ export const text = takeAtLeastOneTill(isNotText)
 /**
  * Text without stopping on ']'
  */
-export const text2 = takeAtLeastOneTill(isNotText)
-    .map(match => newTeXRaw(match))
-;
+export const text2 = closingBracket.then(
+    takeAtLeastOneTill(isNotText)
+        .map(match => newTeXRaw(match))
+);
 
-/**Text without stopping on ']'*/
-    // TODO
-
-    // text2:
-    // _ <- char ']'
-    // t <- try (text <|> return (TeXRaw T.empty))
-    // return $ TeXRaw (T.pack "]") <> t
-
-const notRightBraceSequence = regexp(/[^}]*/);
 const spaces: Parser<TeXRaw> = regexp(/ */)
     .map(newTeXRaw);
-
-const anonym = word(lbrace)
-    .then(notRightBraceSequence)
-    .skip(word(rbrace));
-
-const env = word("\\begin")
-    // .then()  // envName
-    // .then() // TODO { bla bla bla bla }
-    // env body
-        .then(spaces)
-        .then(word("\\end"))
-    // .then(cmdArgs) // TODO
-    // .then(verbatimEnvironments) // TODO
-;
-
-const environment = alt(anonym, env);
 
 
 /** Comment
@@ -434,18 +420,52 @@ export const mathSymbol = string("$");
 
 export const commandSymbol = string("\\");
 
-/** Parser of a single 'LaTeX' constructor, no appending blocks.*/
+/**
+ * Parser of a single 'LaTeX' block. Note: text stops on ']'; if the other parsers fail on the rest,
+ * text2 handles it, starting with ']'
+ */
 export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
     alt(
         text              // <?> "text"
         , dolMath         // <?> "inline math ($)"
         , comment         // <?> "comment"
         , text2           // <?> "text2"
-        // , try environment // <?> "environment" // TODO parse environment
+        , environment     // <?> "environment" // TODO "try"
         , command         // <?> "command"
     )
     )
 );
+
+export const latexParser: Parser<LaTeX[]> = latexBlockParser.many();
+
+const anonym = string(lbrace)
+    .then(
+        latexBlockParser.many()
+    )
+    .skip(string(rbrace));
+
+const env = word("\\begin")
+    .then(string(lbrace))
+    .skip(spaces)
+    .then(regexp(/[a-zA-Z]+/))  // envName
+    .skip(spaces)
+    .then(string(rbrace))
+
+    // env body
+    .then(
+        manyTill(
+            regexp(/.+/),
+            string("\\end")
+        )
+    ).map(res => {
+            console.log("env:");
+            console.log(res);
+            return res;
+        }
+    )
+;
+
+const environment = alt(anonym, env);
 
 /**
  * Special commands (consisting of one char)
@@ -464,7 +484,7 @@ export const endCmd = (c: string) => !isLowercaseAlph(c) && !isUppercaseAlph(c);
 
 const openingBrace = string("{");
 const closingBrace = string("}");
-//noinspection JSUnusedLocalSymbols
+
 const isClosingBrace = (str: string) => str === ("}");
 
 export const fixArg: Parser<FixArg> = openingBrace
@@ -473,13 +493,9 @@ export const fixArg: Parser<FixArg> = openingBrace
     ).map(newFixArg)
 ;
 
-const openingbracket = string(lbracket);
-const closingbracket = string(rbracket);
-const isClosingbracket = (str: string) => str === (rbracket);
-
-export const optArg: Parser<MOptArg | OptArg> = openingbracket
+export const optArg: Parser<MOptArg | OptArg> = openingBracket
     .then(
-        manyTill(latexBlockParser, closingbracket)
+        manyTill(latexBlockParser, closingBracket)
     ).map(newOptArg);
 
 export const cmdArg: Parser<TeXArg> = alt(
