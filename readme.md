@@ -68,7 +68,7 @@ See [live demo in browser](https://digitalheir.github.io/latex-parser/)
 Pull requests are welcome. If you find a bug or an omission, don't be afraid to [open an issue](https://github.com/digitalheir/latex-parser/issues).
 
 ## History on project
-This project used to be a TypeScript fork of the [TeXnous project](http://texnous.org) (see source code for < v0.3.0), but after v0.3.0 is modeled after the Haskell LaTeX library [HaTeX](https://github.com/Daniel-Diaz/HaTeX).
+This project used to be a TypeScript fork of the [TeXnous project](http://texnous.org), but after v0.3.0 is modeled after the Haskell LaTeX library [HaTeX](https://github.com/Daniel-Diaz/HaTeX).
 
 ## Contact
 Inquiries go to maartentrompper@freedom.nl.
