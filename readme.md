@@ -7,14 +7,13 @@
 
 [Live demo in browser](https://digitalheir.github.io/latex-parser/)
 
+
 This is a library designed to build abstract syntax trees for LaTeX documents using JavaScript / TypeScript.
 
-This project is a TypeScript fork of the [**TeXnous project**](http://texnous.org). The original source code has been ported to TypeScript, and is compiled to ES5 with commonjs requires to use through NPM and as minified ES5 UMD module for direct use in the browser.
-
-Implemented functionality requires LaTeX symbols, commands and environments contained in analyzed files to be described and provided to the parser object.
+## ⚠ Warning
+This project only parses a subset of what can be considered "canonical" LaTeX. As I see it, a full LaTeX parser would be a complete port of the TeX code, and [I am not crazy enough to attempt that](https://stackoverflow.com/a/3814911/673206). Of course, we can still make something that works *most* of the time. This approach is similar to [KaTeX](https://github.com/Khan/KaTeX), which focuses on math typesetting.
 
 ## Usage
-
 ```js
 import {LatexStyle, LatexParser} from "latex-parser";
 
@@ -64,3 +63,12 @@ const tokens = latexParser.parse("hello \\author[opt]{name}");
 ```
 
 See [live demo in browser](https://digitalheir.github.io/latex-parser/)
+
+## Contribute 
+Pull requests are welcome. If you find a bug or an omission, don't be afraid to [open an issue](https://github.com/digitalheir/latex-parser/issues).
+
+## History on project
+This project used to be a TypeScript fork of the [**TeXnous project**](http://texnous.org) (see source code for < v0.3.0), but after v0.3.0 is modeled after the Haskell LaTeX library [HaTeX](https://github.com/Daniel-Diaz/HaTeX).
+
+## Contact
+Inquiries go to maartentrompper@freedom.nl.
