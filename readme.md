@@ -16,7 +16,7 @@ This project only parses a subset of what can be considered "canonical" LaTeX. A
 If you don't believe parsing LaTeX is necessarily difficult, prepare to be outsmugged:
 
 * [Is there a BNF grammar of the TeX language?](https://tex.stackexchange.com/questions/4201/is-there-a-bnf-grammar-of-the-tex-language)
-* [Full LaTeX parse in Java](https://stackoverflow.com/questions/13777558/full-latex-parser-in-java)
+* [Full LaTeX parser in Java](https://stackoverflow.com/questions/13777558/full-latex-parser-in-java)
 * [Why is LaTeX so complicated?](
 https://tex.stackexchange.com/questions/222500/why-is-latex-so-complicated)
 
