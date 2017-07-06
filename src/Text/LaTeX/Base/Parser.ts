@@ -20,15 +20,15 @@ import {
 
 import {
     FixArg,
-    LaTeX, mappend,
+    LaTeX,
     MathType, MOptArg,
     newFixArg,
-    newMOptArg,
     newOptArg,
-    newTeXComm, newTeXComment, newTeXEnv, newTeXMath, OptArg, TeXArg, TeXComm,
+    newTeXComm,
+    newTeXComment, newTeXEnv, newTeXMath, OptArg, TeXArg, TeXComm,
     TeXComment,
     TeXEmpty, TeXEnv,
-    TeXMath, TeXSeq
+    TeXMath
 } from "./Syntax";
 import {TeXRaw} from "./Syntax";
 import {newTeXRaw} from "./Syntax";
@@ -423,7 +423,13 @@ export const notTextDefault = {
     "}": true
 };
 
-export const notTextDefaultAndNotClosingBracket = Object.assign({"]": true}, notTextDefault);
+export const notTextDefaultAndNotClosingBracket = {
+        "$": true,
+        "%": true,
+        "\\": true,
+        "{": true,
+        "}": true
+    };
 
 export function isNotText(char: string, notText?: { [k: string]: boolean }) {
     const chars = notText === undefined ? notTextDefault : notText;

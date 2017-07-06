@@ -176,7 +176,7 @@ export function isArgumentHaving(x: any): x is ArgumentHaving {
 /**
  * Types of @LaTeX@ blocks.
  */
-export type LaTeX = TeXSeq |
+export type LaTeX = // TeXSeq |
     LaTeXNoSeq;
 
 export type LaTeXNoSeq = TeXRaw |
@@ -253,12 +253,12 @@ export interface TeXLineBreak {
     noNewPage: boolean;
 }
 
-/** Sequencing of 'LaTeX' expressions.*/
-export interface TeXSeq {
-    head: LaTeX;
-    tail: LaTeX;
-    type: TypeTeXSeq;
-}
+// /** Sequencing of 'LaTeX' expressions.*/
+// export interface TeXSeq {
+//     head: LaTeX;
+//     tail: LaTeX;
+//     type: TypeTeXSeq;
+// }
 
 /**
  An empty block.
@@ -327,11 +327,11 @@ export function mappend(x: LaTeX, y: LaTeX): LaTeX {
         return x;
     else if (isTeXEmpty(x))
         return y;
-    else if (isTeXSeq(x))
-        return {
-            head: x.head,
-            tail: mappend(x.tail, y)
-        };
+    // else if (isTeXSeq(x))
+    //     return {
+    //         head: x.head,
+    //         tail: mappend(x.tail, y)
+    //     };
     else
         return {
             head: x,
@@ -410,8 +410,8 @@ export const lookForCommand = (commandName: string, latex: LaTeX): TeXArg[][] =>
 /** Traverse a 'LaTeX' syntax tree and returns the commands (see 'TeXComm' and
  'TeXCommS') that matches the condition and their arguments in each call.*/
 export const matchCommand = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg[]][] => {
-    if (isTeXSeq(l))
-        return (matchCommand(f, l.head)).concat(matchCommand(f, l.tail));
+    // if (isTeXSeq(l))
+    //     return (matchCommand(f, l.head)).concat(matchCommand(f, l.tail));
 
     if (isTeXCommS(l))
         return f(l.name) ? [[l.name, []]] : [];
@@ -465,8 +465,8 @@ export const matchEnv = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg
         );
         return concatMap2;
     }
-    else if (isTeXSeq(l))
-        return matchEnv(f, l.head).concat(matchEnv(f, l.tail));
+    // else if (isTeXSeq(l))
+    //     return matchEnv(f, l.head).concat(matchEnv(f, l.tail));
     else if (isTeXEnv(l)) {
         const tail: [string, TeXArg[], LaTeX][] = concatMap(l.arguments, (a: TeXArg) => matchEnvArg(f, a))
             .concat(matchEnv(f, l.latex));
@@ -541,11 +541,11 @@ export const getPreamble = (l: LaTeX): LaTeX => {
     if (isTeXEnv(l, "document"))
         return mempty;
 
-    else if (isTeXSeq(l))
-        return mappend(
-            getPreamble(l.head),
-            getPreamble(l.tail)
-        );
+    // else if (isTeXSeq(l))
+    //     return mappend(
+    //         getPreamble(l.head),
+    //         getPreamble(l.tail)
+    //     );
 
     else
         return l;
@@ -632,7 +632,7 @@ export function isTypeHaving(x: any, ...anyOfTypes: string[]): x is TypeHaving {
 }
 
 export function isLaTeXBlock(x: any): x is LaTeX {
-    return isLaTeXBlockNoSeq(x) || isTeXSeq(x);
+    return isLaTeXBlockNoSeq(x); // || isTeXSeq(x);
 }
 
 export function isLaTeXBlockNoSeq(x: any): x is LaTeXNoSeq {
@@ -648,7 +648,7 @@ export function isLaTeXBlockNoSeq(x: any): x is LaTeXNoSeq {
 }
 
 export function isTeXRaw(x: any): x is TeXRaw {
-    return isTextHaving(x);
+    return isTextHaving(x) && isTypeHaving(x, typeTeXRaw);
 }
 
 export function isTeXComm(x: any): x is TeXComm {
@@ -679,7 +679,15 @@ export function isTeXLineBreak(x: any): x is TeXLineBreak {
 }
 
 export function isTeXBraces(x: any): x is TeXBraces {
-    return isLaTeXHaving(x);
+    return isLaTeXHaving(x) && isTypeHaving(x, typeTeXBraces);
+}
+
+export function isFixArg(x: any): x is FixArg {
+    return isTypeHaving(x, "FixArg");
+}
+
+export function isOptArg(x: any): x is OptArg {
+    return isTypeHaving(x, "OptArg");
 }
 
 export function isTeXComment(x: any): x is TeXComment {
@@ -687,11 +695,11 @@ export function isTeXComment(x: any): x is TeXComment {
 }
 
 
-export function isTeXSeq(x: any): x is TeXSeq {
-    return x !== undefined && x.head && x.tail
-        && isTypeHaving(x, typeTeXSeq)
-        ;
-}
+// export function isTeXSeq(x: any): x is TeXSeq {
+//     return x !== undefined && x.head && x.tail
+//         && isTypeHaving(x, typeTeXSeq)
+//         ;
+// }
 
 export function isTeXEmpty(e: any) {
     return e !== undefined && Object.keys(e).length === 0;

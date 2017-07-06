@@ -5,6 +5,7 @@
 /node_modules/
 /sources/
 /tests/
+/deprecated/
 /latex-parser.min.js
 /latex-parser.min.js.*
 /deprecated

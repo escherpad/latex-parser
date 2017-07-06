@@ -1,3 +1,5 @@
+/// <reference path="./typings/index.d.ts" />
+
 // general JavaScript utils
 export * from "./ts-compiled/Utils";
 
