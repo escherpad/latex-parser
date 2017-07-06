@@ -104,6 +104,11 @@ describe("Parser", () => {
             expect(mustBeOk(latexBlockParser.parse("\nlol\n")).value).to.deep.equal(
                 newTeXRaw("\nlol\n")
             );
+            expect(mustBeOk(environment.parse(`\\begin{document}
+
+\\end{document}`)).value).to.deep.equal(
+                newTeXEnv("document", [newTeXRaw("\n\n")])
+            );
         });
     });
 

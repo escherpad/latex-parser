@@ -648,7 +648,9 @@ export function isLaTeXBlockNoSeq(x: any): x is LaTeXNoSeq {
 }
 
 export function isTeXRaw(x: any): x is TeXRaw {
-    return isTextHaving(x) && isTypeHaving(x, typeTeXRaw);
+    return x !== undefined
+    && x.type !== undefined
+    && isTextHaving(x) && isTypeHaving(x, typeTeXRaw);
 }
 
 export function isTeXComm(x: any): x is TeXComm {
@@ -663,10 +665,7 @@ export function isTeXCommS(x: any): x is TeXCommS {
 }
 
 export function isTeXEnv(x: any, name?: string): x is TeXEnv {
-    return isLaTeXHaving(x)
-        && isNameHaving(x, name)
-        && isArgumentHaving(x)
-        && isTypeHaving(x, typeTeXEnv)
+    return isTypeHaving(x, typeTeXEnv)
         ;
 }
 
