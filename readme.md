@@ -23,50 +23,9 @@ https://tex.stackexchange.com/questions/222500/why-is-latex-so-complicated)
 
 ## Usage
 ```js
-import {LatexStyle, LatexParser} from "latex-parser";
+import {latexParser} from "latex-parser";
 
-const latexStyle = new LatexStyle();
-latexStyle.loadPackage("demo", {
-  symbols: [{
-      pattern: "\\\\"
-  }],
-  commands: [{
-      name: "author",
-      pattern: "[#1]#2",
-      modes: {TEXT: true},
-      parameters: [{}, {}],
-      operations: []
-  }, {
-      name: "author",
-      pattern: " [#1]#2",
-      modes: {TEXT: true},
-      parameters: [{}, {}],
-      operations: []
-  }, {
-      name: "author",
-      pattern: "#1",
-      modes: {TEXT: true},
-      parameters: [{}],
-      operations: []
-  }, 
-   {
-      name: "document",
-      modes: {TEXT: true}
-  }, 
-  {
-      name: "enddocument",
-      modes: {TEXT: true}
-  }
-  ],
-  environments: [{
-      name: "document",
-      modes: {TEXT: true}
-  }]
-});
-
-
-const latexParser = new LatexParser(latexStyle);
-
+// tokens :: LaTeX[]
 const tokens = latexParser.parse("hello \\author[opt]{name}");
 ```
 
