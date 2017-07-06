@@ -4,12 +4,12 @@ import {expect} from "chai";
 import {
     mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXEnv, newTeXMath, newTeXMathDol, newTeXRaw,
     TeXComment, TeXRaw
-} from "../../../../sources/Text/LaTeX/Base/Syntax";
+} from "../../../../src/Text/LaTeX/Base/Syntax";
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
     text, latexParser
-} from "../../../../sources/Text/LaTeX/Base/Parser";
+} from "../../../../src/Text/LaTeX/Base/Parser";
 import {custom, Result, Success} from "parsimmon";
 
 

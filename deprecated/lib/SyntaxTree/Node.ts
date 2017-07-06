@@ -1,5 +1,5 @@
 import {SyntaxTree} from "./index";
-import {isNumber, mustBeArray, mustBeObject, mustNotBeUndefined} from "../Utils";
+import {isNumber, mustBeArray, mustBeObject, mustNotBeUndefined} from "../../../src/Utils";
 
 /**
  * Syntax tree node properties

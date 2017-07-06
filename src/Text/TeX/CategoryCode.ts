@@ -17,7 +17,7 @@ export const categories = {
     15: "Invalid character", // [DEL]
 };
 
-// TODO character code can be changed at any time. Parser must deal with that.
+// TODO character code can be changed at any time. A full parser must deal with that.
 
 /**
  * TeXBook, Chapter 7: How TEX Reads What You Type, p. 37:

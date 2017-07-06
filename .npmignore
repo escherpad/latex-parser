@@ -6,3 +6,5 @@
 /sources/
 /tests/
 /latex-parser.min.js
+/latex-parser.min.js.*
+/deprecated

@@ -3,7 +3,7 @@ import {SymbolToken} from "./SymbolToken";
 import {Token, TokenProperties} from "./index";
 import {Lexeme} from "../../Latex/Lexeme";
 import {Parameter} from "../../LatexStyle/Item/Parameter";
-import {mustNotBeUndefined} from "../../Utils";
+import {mustNotBeUndefined} from "../../../../src/Utils";
 
 
 /**

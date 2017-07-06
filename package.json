@@ -1,6 +1,6 @@
 {
   "name": "latex-parser",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "LaTeX parser",
   "keywords": [
     "LaTeX",
@@ -23,10 +23,6 @@
     "url": "https://github.com/digitalheir"
   },
   "contributors": [
-    {
-      "name": "Kirill Chuvilin",
-      "email": "k.chuvilin@texnous.org"
-    },
     {
       "name": "Maarten Trompper",
       "email": "maartentrompper@freedom.nl"
@@ -52,6 +48,7 @@
     "parsimmon": "^1.4.0",
     "ts-node": "^3.0.6",
     "tslint": "^5.4.3",
+    "tslint-loader": "^3.5.3",
     "typescript": "^2.3.4",
     "webpack": "^2.6.1"
   },

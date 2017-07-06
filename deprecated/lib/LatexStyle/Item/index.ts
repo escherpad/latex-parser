@@ -1,6 +1,6 @@
 import {Lexeme} from "../../Latex/Lexeme";
 import {modes, KirillMode, mustBeKirillMode} from "../../Latex/Mode";
-import {testProperties} from "../../Utils";
+import {testProperties} from "../../../../src/Utils";
 
 /**
  * LaTeX style item properties

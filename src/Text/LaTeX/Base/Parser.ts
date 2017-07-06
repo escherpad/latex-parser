@@ -1,12 +1,22 @@
 // <reference types="../../../../../../types/parsimmon.d.ts" />
 
 import {
-    alt, regexp,
-    string, Parser, lazy, takeWhile,
-    Success, Result, seqMap,
+    alt,
+    regexp,
+    string,
+    Parser,
+    lazy,
+    takeWhile,
+    Success,
+    Result,
+    seqMap,
     ResultInterface,
-    makeSuccess, Failure, seq
+    makeSuccess,
+    Failure,
+    test,
+    seq
 } from "parsimmon";
+// import  from "parsimmon";
 
 import {
     FixArg,
@@ -22,12 +32,13 @@ import {
 } from "./Syntax";
 import {TeXRaw} from "./Syntax";
 import {newTeXRaw} from "./Syntax";
-import Parsimmon = require("parsimmon");
 import {
     mconcat,
     mustBeNumber,
     mustNotBeUndefined
-} from "../../../lib/Utils";
+} from "../../../Utils";
+import {makeFailure} from "parsimmon";
+import {eof} from "parsimmon";
 
 /** The /LaTeX/ parser.
 
@@ -207,7 +218,7 @@ function mergeReplies<T, U>(result: ResultInterface<T>, last?: ResultInterface<U
 }
 
 function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: V, res: (T)) => V, initial: V) {
-    return Parsimmon(function (input: string, i: number): Result<V> {
+    return Parser(function (input: string, i: number): Result<V> {
         let accum: V = initial;
 
         let j = 0;
@@ -226,7 +237,16 @@ function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: 
         // if (lengthUntilEnd < 0) return Parsimmon.makeFailure(i, "No end codon found: " + till);
 
         while (i < input.length) {
+            const endCodonFound = till._(input, i);
+            if (endCodonFound.status) {
+                i = mustBeNumber(endCodonFound.index);
+                break;
+            }
+
             const bigParse = manyOf._(input, i);
+            if (isNotOk(bigParse))
+                return bigParse;
+
             result = mustNotBeUndefined(mergeReplies(bigParse, result));
             if (isNotOk(result)) {
                 return result;
@@ -238,11 +258,6 @@ function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: 
             accum = map(accum, value);
 
             i = mustBeNumber(result.index);
-            const endCodonFound = till._(input, i);
-            if (endCodonFound.status) {
-                i = mustBeNumber(endCodonFound.index);
-                break;
-            }
         }
         // i = lengthUntilEnd;
         const result2: Success<V> = makeSuccess(i, accum);
@@ -306,10 +321,10 @@ const closingBracket = string(rbracket);
 const isClosingbracket = (str: string) => str === (rbracket);
 
 function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
-    return Parsimmon((str, i) => {
+    return Parser((str, i): Result<string> => {
         const firstChar = str.charAt(i);
         if (i >= str.length || till(firstChar)) {
-            return Parsimmon.makeFailure(i, "text character");
+            return makeFailure(i, "text character");
         } else {
             const strz = [firstChar];
             i++;
@@ -319,7 +334,7 @@ function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
                 i++;
                 char = str.charAt(i);
             }
-            return Parsimmon.makeSuccess(i, strz.join(""));
+            return makeSuccess(i, strz.join(""));
         }
     });
 }
@@ -444,7 +459,7 @@ const anonym = string(lbrace)
     )
     .skip(string(rbrace));
 
-export const env = Parsimmon(function (input: string, i: number): Result<TeXEnv> {
+export const env = Parser(function (input: string, i: number): Result<TeXEnv> {
     const beginFound = string("\\begin")
         .then(string(lbrace))
         .then(spaces)
@@ -474,7 +489,7 @@ export const environment = alt(anonym, env);
 /**
  * Special commands (consisting of one char)
  */
-export const specialChar = Parsimmon.test(isSpecialCharacter);
+export const specialChar = test(isSpecialCharacter);
 
 function isUppercaseAlph(c: string) {
     return c >= "A" && c <= "Z";
@@ -539,7 +554,7 @@ export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
  * Command
  */
 export const command: Parser<TeXComm | TeXEmpty> = alt(
-    commandSymbol.then(Parsimmon.eof).map(() => {
+    commandSymbol.then(eof).map(() => {
         return {};
     }),
 

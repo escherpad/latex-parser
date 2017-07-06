@@ -14,7 +14,7 @@
     "outDir": "ts-compiled"
   },
   "include": [
-    "sources/**/*.ts",
+    "src/**/*.ts",
     "typings/index.d.ts"
   ],
   "exclude": [

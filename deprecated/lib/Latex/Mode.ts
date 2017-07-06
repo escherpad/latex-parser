@@ -1,4 +1,4 @@
-import {isString} from "../Utils";
+import {isString} from "../../../src/Utils";
 
 /**
  * TODO Maarten: where does this list come from?! AFAIK LaTeX has just three modes: paragraph, math and LR

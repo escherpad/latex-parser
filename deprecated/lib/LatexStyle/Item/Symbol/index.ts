@@ -2,7 +2,7 @@
 import {mustBeParameterProperties, Parameter, ParameterProperties} from "../Parameter";
 import {Item, ItemProperties} from "../index";
 import {mustBeOperationProperties, Operation, OperationProperties} from "../../../Latex/Operation";
-import {isNumber, mustNotBeUndefined} from "../../../Utils";
+import {isNumber, mustNotBeUndefined} from "../../../../../src/Utils";
 /**
  * LaTeX symbol properties
  * @interface SymbolProperties

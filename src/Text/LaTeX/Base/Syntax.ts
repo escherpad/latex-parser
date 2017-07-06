@@ -52,7 +52,7 @@
 
  This will create a blac box (see 'rule') as wide as the text and two points tall.
  */
-import {concatMap, isNumber, mustBeArray, snd} from "../../../lib/Utils";
+import {concatMap, isNumber, mustBeArray, snd} from "../../../Utils";
 
 export type Measure = BuiltInMeasure | CustomMeasure;
 // deriving (
@@ -196,7 +196,7 @@ export interface TypeHaving {
 }
 
 export type TypeTeXSeq = "TeXSeq";
-export const typeTeXSeq: TypeTeXSeq = "TeXSeq";
+export const typeTeXSeq: TypeTeXSeq = "TeXSeq"; //noinspection JSUnusedGlobalSymbols
 export interface TypeHavingTeXSeq extends TypeHaving {
     type: TypeTeXSeq;
 }
@@ -232,7 +232,7 @@ export interface TypeHavingTeXComm extends TypeHaving {
 }
 
 export type TypeTeXCommS = "TeXCommS";
-export const typeTeXCommS: TypeTeXCommS = "TeXCommS";
+export const typeTeXCommS: TypeTeXCommS = "TeXCommS"; //noinspection JSUnusedGlobalSymbols
 export interface TypeHavingTeXCommS extends TypeHaving {
     type: TypeTeXCommS;
 }

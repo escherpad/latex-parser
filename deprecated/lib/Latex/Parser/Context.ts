@@ -3,7 +3,7 @@ import {Token} from "../../SyntaxTree/Token/index";
 import {Operation} from "../Operation";
 import {ModeStates} from "../Mode";
 import {GROUP} from "../Directive/GROUP";
-import {mustBeArray, mustNotBeUndefined} from "../../Utils";
+import {mustBeArray, mustNotBeUndefined} from "../../../../src/Utils";
 
 /**
  * The parsing context

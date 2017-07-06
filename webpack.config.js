@@ -20,7 +20,7 @@ console.log(minifiedFileName);
 
 const config = {
   entry: {
-    umd: `${__dirname}/sources/main.ts`
+    umd: `${__dirname}/src/main.ts`
   },
   devtool: "source-map",
   output: {
@@ -31,13 +31,12 @@ const config = {
   },
   module: {
     rules: [
-      // TODO for better code quality, enable
-      // {
-      //     enforce: 'pre',
-      //     test: /\.tsx?$/,
-      //     loader: 'tslint-loader',
-      //     exclude: /node_modules/
-      // },
+      {
+          enforce: 'pre',
+          test: /\.tsx?$/,
+          loader: 'tslint-loader',
+          exclude: /node_modules/
+      },
       {
         test: /\.tsx?$/,
         loader: "awesome-typescript-loader",

@@ -12,7 +12,7 @@ import {ParameterToken} from "../../SyntaxTree/Token/ParameterToken";
 import {CommandToken} from "../../SyntaxTree/Token/CommandToken";
 import {Lexeme} from "../Lexeme";
 import {Symbol as SymbolItem} from "../../LatexStyle/Item/Symbol/index";
-import {isNumber, isString, mustNotBeUndefined} from "../../Utils";
+import {isNumber, isString, mustNotBeUndefined} from "../../../../src/Utils";
 
 /**
  * Parse the next token

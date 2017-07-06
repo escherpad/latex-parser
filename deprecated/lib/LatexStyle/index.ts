@@ -1,7 +1,7 @@
 import {Command, CommandAndPackage} from "./Item/Symbol/Command";
 import {Environment, EnvironmentAndPackage} from "./Item/Environment";
 import {Symbol, SymbolAndPackage} from "./Item/Symbol/index";
-import {mustBeArray} from "../Utils";
+import {mustBeArray} from "../../../src/Utils";
 import {State} from "../Latex/State";
 import {PackageProperties} from "./PackageProperties";
 

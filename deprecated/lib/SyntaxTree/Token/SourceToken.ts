@@ -1,6 +1,6 @@
 import {Token, TokenProperties} from "./index";
 import {Lexeme, mustBeLexeme} from "../../Latex/Lexeme";
-import {mustBeString} from "../../Utils";
+import {mustBeString} from "../../../../src/Utils";
 
 /**
  * LaTeX source fragment token properties

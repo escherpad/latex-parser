@@ -1,5 +1,5 @@
 import {Node} from "./Node";
-import {mustBeString} from "../Utils";
+import {mustBeString} from "../../../src/Utils";
 
 /**
  * Syntax tree structure
