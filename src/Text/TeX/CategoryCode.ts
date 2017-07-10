@@ -30,6 +30,39 @@ export const categories = {
 export type CharacterCategory = keyof typeof categories;
 
 
+export const defaultCategories = (
+    unicodePointer: number,
+    // strictAboutLetters: boolean = false // TODO
+): number => {
+    switch(unicodePointer){
+        case 92: return 0;
+        case 123: return 1;
+        case 125: return 2;
+        case 36: return 3;
+        case 38: return 4;
+        case 13: return 5;
+        case 35: return 6;
+        case 94: return 7;
+        case 95: return 8;
+        case 0: return 9;
+        case 32: return 10;
+        case 126: return 13;
+        case 37: return 14;
+        case 127: return 15;
+        default:
+            return 11; // Assume letter
+            // if (
+            //     (unicodePointer >= 97 && unicodePointer <= 122) // a-z
+            //     || 
+            //     (unicodePointer >= 65 && unicodePointer <= 90) // A-Z
+            // ) {
+            //     return 11; // strictly [a-zA-Z]     
+            // } else if() {
+            // }
+            // return 12; // Other character
+    }
+}
+
 export interface TeXChar {
     unicode: number;
     category: CharacterCategory;
