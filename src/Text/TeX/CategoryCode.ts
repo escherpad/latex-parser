@@ -28,3 +28,21 @@ export const categories = {
  *   256 characters are classified into 16 categories numbered 0 to 15:
  */
 export type CharacterCategory = keyof typeof categories;
+
+
+export interface TeXChar {
+    unicode: number;
+    category: CharacterCategory;
+}
+
+export function convertToTeXChars(categoryMap: (unicode: number) => CharacterCategory, str: string): TeXChar[] {
+    const chars: TeXChar[] = [];
+    for (let i = 0; i < str.length; i++) {
+        const unicode: number = str.charCodeAt(i);
+        chars.push({
+            unicode,
+            category: categoryMap(unicode)
+        });
+        }
+    return chars;
+}
