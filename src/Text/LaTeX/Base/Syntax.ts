@@ -1,4 +1,5 @@
-import {concatMap, isNumber, mustBeArray, snd} from "../../../Utils";
+import {isArray, isNumber} from "../../../Utils";
+import {convertToTeXChars, convertToTeXCharsDefault, defaultCategories, TeXChar} from "../../TeX/CategoryCode";
 
 /** LaTeX syntax description in the definition of the 'LaTeX' datatype.
  If you want to add new commands or environments not defined in
@@ -95,7 +96,7 @@ export function isBuiltInMeasure(x: any): x is BuiltInMeasure {
  * You can introduce a 'LaTeX' expression as a measure.
  */
 export interface CustomMeasure {
-    expression: LaTeX;
+    expression: LaTeXRaw;
 }
 
 export function isCustomMeasure(x: any): x is CustomMeasure {
@@ -135,12 +136,12 @@ export function isNameHaving(x: any, name?: string): x is NameHaving {
         );
 }
 
-export interface MultipleLaTeXHaving {
-    latex: LaTeX[];
+export interface CharCodeHaving {
+    charCode: number;
 }
 
-export function isMultipleLaTeXHaving(x: any): x is MultipleLaTeXHaving {
-    return x.latex instanceof Array;
+export interface CharacterCatergiesHaving {
+    characterCategories: TeXChar[];
 }
 
 export interface TextHaving {
@@ -153,12 +154,12 @@ export function isTextHaving(x: any): x is TextHaving {
 
 
 export interface LaTeXHaving {
-    latex: LaTeX;
+    latex: LaTeXTxt[];
 }
-
+export type MultipleLaTeXHaving = LaTeXHaving;
 
 export function isLaTeXHaving(x: any): x is LaTeXHaving {
-    return x !== undefined && isLaTeXBlock(x.latex);
+    return x !== undefined && isArray(x.latex);
 }
 
 export interface MathTypeHaving {
@@ -177,17 +178,25 @@ export function isArgumentHaving(x: any): x is ArgumentHaving {
 /**
  * Types of @LaTeX@ blocks.
  */
-export type LaTeX = // TeXSeq |
-    LaTeXNoSeq;
+export type LaTeX = LaTeXRaw | LaTeXNoRaw;
 
-export type LaTeXNoSeq = TeXRaw |
+export type LaTeXRaw = TeXBuildingBlocks | TeXRaw;
+
+/**
+ * Raw TeX string converted to @TeXChar@s.
+ */
+export type LaTeXNoRaw = TeXBuildingBlocks | TeXChar;
+
+export type TeXBuildingBlocks =
     TeXComm |
     TeXEnv |
     TeXMath |
     TeXLineBreak |
     TeXBraces |
-    TeXComment |
-    TeXEmpty;
+    TeXComment;
+
+// type LaTeXExtended = LaTeXRawString |
+//     TeXEmpty;
 
 
 // deriving (Data, Eq, Generic, Show, Typeable)
@@ -226,6 +235,12 @@ export interface TypeHavingTeXRaw extends TypeHaving {
     type: TypeTeXRaw;
 }
 
+// export type TypeTeXChar = "TeXChar";
+// export const typeTeXChar: TypeTeXChar = "TeXChar";
+// export interface TypeHavingTeXChar extends TypeHaving {
+//     type: TypeTeXChar;
+// }
+
 export type TypeTeXComm = "TeXComm" | TypeTeXCommS;
 export const typeTeXComm: TypeTeXComm = "TeXComm";
 export interface TypeHavingTeXComm extends TypeHaving {
@@ -238,11 +253,12 @@ export interface TypeHavingTeXCommS extends TypeHaving {
     type: TypeTeXCommS;
 }
 
-export type TeXRaw = TextHaving & TypeHavingTeXRaw; // Raw text.
+export type TeXRaw = TextHaving & TypeHavingTeXRaw & CharacterCatergiesHaving; // Raw text.
+
 export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
 export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
 export type TeXEnv = MultipleLaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
-export type TeXMath = LaTeXHaving & MathTypeHaving; // Mathematical expressions.
+export type TeXMath = MultipleLaTeXHaving & MathTypeHaving; // Mathematical expressions.
 export type TeXBraces = LaTeXHaving & TypeHavingTeXBraces;
 
 /**
@@ -254,19 +270,19 @@ export interface TeXLineBreak {
     noNewPage: boolean;
 }
 
-// /** Sequencing of 'LaTeX' expressions.*/
+/** Sequencing of 'LaTeX' expressions.*/
 // export interface TeXSeq {
 //     head: LaTeX;
 //     tail: LaTeX;
 //     type: TypeTeXSeq;
 // }
 
-/**
- An empty block.
- /Neutral element/ of '<>'.
- */
-export interface TeXEmpty {
-}
+// /**
+//  An empty block.
+//  /Neutral element/ of '<>'.
+//  */
+// export interface TeXEmpty {
+// }
 
 /**
  * When rendering, no space or @{}@ will be added at
@@ -319,27 +335,26 @@ export interface TypeHavingMParArg extends TypeHaving {type: "MParArg";
 //
 // Monoid instance for 'LaTeX'.
 //
-
-export const mempty: TeXEmpty = {};
-
-/** Method 'mappend' is strict in both arguments (except in the case when the first argument is 'TeXEmpty').*/
-export function mappend(x: LaTeX, y: LaTeX): LaTeX {
-    if (isTeXEmpty(y))
-        return x;
-    else if (isTeXEmpty(x))
-        return y;
-    // else if (isTeXSeq(x))
-    //     return {
-    //         head: x.head,
-    //         tail: mappend(x.tail, y)
-    //     };
-    else
-        return {
-            head: x,
-            tail: y
-        };
-}
-
+//
+// export const mempty: TeXEmpty = {};
+//
+// /** Method 'mappend' is strict in both arguments (except in the case when the first argument is 'TeXEmpty').*/
+// export function mappend(x: LaTeX, y: LaTeX): typeTeXSeq {
+//     if (isTeXEmpty(y))
+//         return x;
+//     else if (isTeXEmpty(x))
+//         return y;
+//     // else if (isTeXSeq(x))
+//     //     return {
+//     //         head: x.head,
+//     //         tail: mappend(x.tail, y)
+//     //     };
+//     else
+//         return {
+//             head: x,
+//             tail: y
+//         };
+// }
 
 /** Method 'fromString' escapes LaTeX reserved characters using 'protectString'.*/
 export const fromStringLaTeX = (x: string) => newTeXRaw(protectString(x));
@@ -389,110 +404,109 @@ export function protectChar(c: string): string {
 //
 
 
-/** Look into a 'LaTeX' syntax tree to find any call to the command with
- the given name. It returns a list of arguments with which this command
- is called.
+// /** Look into a 'LaTeX' syntax tree to find any call to the command with
+//  the given name. It returns a list of arguments with which this command
+//  is called.
+//
+//  > lookForCommand = (fmap snd .) . matchCommand . (==)
+//
+//  If the returned list is empty, the command was not found. However,
+//  if the list contains empty lists, those are callings to the command
+//  with no arguments.
+//
+//  For example
+//
+//  > lookForCommand "author" l
+//
+//  would look for the argument passed to the @\\author@ command in @l@.
+//  */
+// export const lookForCommand = (commandName: string, latex: LaTeX): TeXArg[][] =>
+//     matchCommand(s => s === commandName, latex).map(snd);
+//
+// /** Traverse a 'LaTeX' syntax tree and returns the commands (see 'TeXComm' and
+//  'TeXCommS') that matches the condition and their arguments in each call.*/
+// export const matchCommand = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg[]][] => {
+//     // if (isTeXSeq(l))
+//     //     return (matchCommand(f, l.head)).concat(matchCommand(f, l.tail));
+//
+//     if (isTeXCommS(l))
+//         return f(l.name) ? [[l.name, []]] : [];
+//
+//     if (isTeXComm(l)) {
+//         const xs: [string, TeXArg[]][] = concatMap(l.arguments, arg => matchCommandArg(f, arg));
+//         if (f(l.name)) {
+//             const a: [string, TeXArg[]][] = [[l.name, l.arguments]];
+//             return a.concat(xs);
+//         } else {
+//             return xs;
+//         }
+//     }
+//
+//     if (isTeXMath(l) || isTeXBraces(l))
+//         return matchCommand(f, l.latex);
+//
+//     return [];
+// };
+//
+// export const matchCommandArg = (f: ((string: string) => boolean), l: TeXArg): [string, TeXArg[]][] => {
+//     if (isMultipleLaTeXHaving(l)) {
+//         const res: [string, TeXArg[]][] = [].concat.apply([], mustBeArray(l.latex).map(latex => matchCommand(f, latex)));
+//         return res;
+//     }
+//     else {
+//         return matchCommand(f, l.latex);
+//     }
+// };
 
- > lookForCommand = (fmap snd .) . matchCommand . (==)
 
- If the returned list is empty, the command was not found. However,
- if the list contains empty lists, those are callings to the command
- with no arguments.
+// /** Similar to 'lookForCommand', but applied to environments.
+//  It returns a list with arguments passed and content of the
+//  environment in each call.
+//
+//  > lookForEnv = (fmap (\(_,as,l) -> (as,l)) .) . matchEnv . (==)
+//  */
+// const compressEnv = (([ignored, as, l]: [any, TeXArg[], LaTeX]): [TeXArg[], LaTeX] => [as, l]);
+// export const lookForEnv = (s: string, l: LaTeX): [TeXArg[], LaTeX][] => {
+//     return matchEnv(str => str === s, l).map(compressEnv);
+// };
 
- For example
-
- > lookForCommand "author" l
-
- would look for the argument passed to the @\\author@ command in @l@.
- */
-export const lookForCommand = (commandName: string, latex: LaTeX): TeXArg[][] =>
-    matchCommand(s => s === commandName, latex).map(snd);
-
-/** Traverse a 'LaTeX' syntax tree and returns the commands (see 'TeXComm' and
- 'TeXCommS') that matches the condition and their arguments in each call.*/
-export const matchCommand = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg[]][] => {
-    // if (isTeXSeq(l))
-    //     return (matchCommand(f, l.head)).concat(matchCommand(f, l.tail));
-
-    if (isTeXCommS(l))
-        return f(l.name) ? [[l.name, []]] : [];
-
-    if (isTeXComm(l)) {
-        const xs: [string, TeXArg[]][] = concatMap(l.arguments, arg => matchCommandArg(f, arg));
-        if (f(l.name)) {
-            const a: [string, TeXArg[]][] = [[l.name, l.arguments]];
-            return a.concat(xs);
-        } else {
-            return xs;
-        }
-    }
-
-    if (isTeXMath(l) || isTeXBraces(l))
-        return matchCommand(f, l.latex);
-
-    return [];
-};
-
-export const matchCommandArg = (f: ((string: string) => boolean), l: TeXArg): [string, TeXArg[]][] => {
-    if (isMultipleLaTeXHaving(l)) {
-        const res: [string, TeXArg[]][] = [].concat.apply([], mustBeArray(l.latex).map(latex => matchCommand(f, latex)));
-        return res;
-    }
-    else {
-        return matchCommand(f, l.latex);
-    }
-};
-
-
-/** Similar to 'lookForCommand', but applied to environments.
- It returns a list with arguments passed and content of the
- environment in each call.
-
- > lookForEnv = (fmap (\(_,as,l) -> (as,l)) .) . matchEnv . (==)
- */
-const compressEnv = (([ignored, as, l]: [any, TeXArg[], LaTeX]): [TeXArg[], LaTeX] => [as, l]);
-export const lookForEnv = (s: string, l: LaTeX): [TeXArg[], LaTeX][] => {
-    return matchEnv(str => str === s, l).map(compressEnv);
-};
-
-/** Traverse a 'LaTeX' syntax tree and returns the environments (see
- 'TeXEnv') that matches the condition, their arguments and their content
- in each call.*/
-export const matchEnv = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg[], LaTeX][] => {
-    if (isTeXComm(l)) {
-        const concatMap2: [string, TeXArg[], LaTeX][] = concatMap(
-            l.arguments,
-            (a: TeXArg): [string, TeXArg[], LaTeX][] => matchEnvArg(f, a)
-        );
-        return concatMap2;
-    }
-    // else if (isTeXSeq(l))
-    //     return matchEnv(f, l.head).concat(matchEnv(f, l.tail));
-    else if (isTeXEnv(l)) {
-        const tail: [string, TeXArg[], LaTeX][] = concatMap(l.arguments, (a: TeXArg) => matchEnvArg(f, a))
-            .concat(matchEnv(f, l.latex));
-        if (f(l.name)) {
-            const head: [string, TeXArg[], LaTeX][] = [[l.name, l.arguments, l.latex]];
-            const concat: [string, TeXArg[], LaTeX][] = head.concat(tail);
-            return concat;
-        } else {
-            return tail;
-        }
-    }
-    else if (isTeXMath(l) || isTeXBraces(l))
-        return matchEnv(f, l.latex);
-    else {
-        return [];
-    }
-};
-
-export const matchEnvArg = (f: ((s: string) => boolean), l: TeXArg): [string, TeXArg[], LaTeX][] => {
-    if (isMultipleLaTeXHaving(l)) {
-        return concatMap(l.latex, (latex: LaTeX): [string, TeXArg[], LaTeX][] => matchEnv(f, latex));
-    } else {
-        return matchEnv(f, l.latex);
-    }
-};
+// /** Traverse a 'LaTeX' syntax tree and returns the environments (see
+//  'TeXEnv') that matches the condition, their arguments and their content
+//  in each call.*/
+// export const matchEnv = (f: ((s: string) => boolean), l: LaTeX): [string, TeXArg[], LaTeX][] => {
+//     if (isTeXComm(l)) {
+//         return concatMap(
+//             l.arguments,
+//             (a: TeXArg): [string, TeXArg[], LaTeX][] => matchEnvArg(f, a)
+//         );
+//     }
+//     // else if (isTeXSeq(l))
+//     //     return matchEnv(f, l.head).concat(matchEnv(f, l.tail));
+//     else if (isTeXEnv(l)) {
+//         const tail: [string, TeXArg[], LaTeX][] = concatMap(l.arguments, (a: TeXArg) => matchEnvArg(f, a))
+//             .concat(matchEnv(f, l.latex));
+//         if (f(l.name)) {
+//             const head: [string, TeXArg[], LaTeX][] = [[l.name, l.arguments, l.latex]];
+//             const concat: [string, TeXArg[], LaTeX][] = head.concat(tail);
+//             return concat;
+//         } else {
+//             return tail;
+//         }
+//     }
+//     else if (isTeXMath(l) || isTeXBraces(l))
+//         return matchEnv(f, l.latex);
+//     else {
+//         return [];
+//     }
+// };
+//
+// export const matchEnvArg = (f: ((s: string) => boolean), l: TeXArg): [string, TeXArg[], LaTeX][] => {
+//     if (isMultipleLaTeXHaving(l)) {
+//         return concatMap(l.latex, (latex: LaTeX): [string, TeXArg[], LaTeX][] => matchEnv(f, latex));
+//     } else {
+//         return matchEnv(f, l.latex);
+//     }
+// };
 
 
 //  /** The function 'texmap' looks for subexpressions that match a given
@@ -528,29 +542,29 @@ export const matchEnvArg = (f: ((s: string) => boolean), l: TeXArg): [string, Te
 //  go' (ParArg  l ) = ParArg  <$> go l
 //  go' (MParArg ls) = MParArg <$> mapM go ls
 
-/**
- * Extract the content of the 'document' environment, if present.
- */
-export const getBody = (l: LaTeX): LaTeX | undefined => {
-    const env = lookForEnv("document", l);
-    return env.length > 0 ? env[0] : undefined;
-};
+// /**
+//  * Extract the content of the 'document' environment, if present.
+//  */
+// export const getBody = (l: LaTeX): LaTeX | undefined => {
+//     const env = lookForEnv("document", l);
+//     return env.length > 0 ? env[0] : undefined;
+// };
 
-/** Extract the preamble of a 'LaTeX' document (everything before the 'document'
- environment). It could be empty.*/
-export const getPreamble = (l: LaTeX): LaTeX => {
-    if (isTeXEnv(l, "document"))
-        return mempty;
-
-    // else if (isTeXSeq(l))
-    //     return mappend(
-    //         getPreamble(l.head),
-    //         getPreamble(l.tail)
-    //     );
-
-    else
-        return l;
-};
+// /** Extract the preamble of a 'LaTeX' document (everything before the 'document'
+//  environment). It could be empty.*/
+// export const getPreamble = (l: LaTeX): LaTeX => {
+//     if (isTeXEnv(l, "document"))
+//         return mempty;
+//
+//     // else if (isTeXSeq(l))
+//     //     return mappend(
+//     //         getPreamble(l.head),
+//     //         getPreamble(l.tail)
+//     //     );
+//
+//     else
+//         return l;
+// };
 
 
 // ---------------------------------------
@@ -632,11 +646,22 @@ export function isTypeHaving(x: any, ...anyOfTypes: string[]): x is TypeHaving {
     return anyOfTypes.length === 0 ? typeof x.type === "string" : anyOfTypes.some(type => x.type === type);
 }
 
-export function isLaTeXBlock(x: any): x is LaTeX {
-    return isLaTeXBlockNoSeq(x); // || isTeXSeq(x);
+export function isLaTeXBlock(x: any): x is (LaTeXRaw | LaTeXNoRaw) {
+    return isLaTeXRaw(x) || isLaTeXNoRaw(x); // || isTeXSeq(x);
 }
 
-export function isLaTeXBlockNoSeq(x: any): x is LaTeXNoSeq {
+export function isLaTeXNoRaw(x: any): x is LaTeXNoRaw {
+    return isTeXEmpty(x)
+        || isTeXChar(x)
+        || isTeXComm(x)
+        || isTeXEnv(x)
+        || isTeXMath(x)
+        || isTeXLineBreak(x)
+        || isTeXBraces(x)
+        || isTeXComment(x);
+}
+
+export function isLaTeXRaw(x: any): x is LaTeXRaw {
     return isTeXEmpty(x)
         || isTeXRaw(x)
         || isTeXComm(x)
@@ -644,14 +669,19 @@ export function isLaTeXBlockNoSeq(x: any): x is LaTeXNoSeq {
         || isTeXMath(x)
         || isTeXLineBreak(x)
         || isTeXBraces(x)
-        || isTeXComment(x)
-        ;
+        || isTeXComment(x);
 }
 
 export function isTeXRaw(x: any): x is TeXRaw {
     return x !== undefined
-    && x.type !== undefined
-    && isTextHaving(x) && isTypeHaving(x, typeTeXRaw);
+        && x.type !== undefined
+        && isTextHaving(x) && isTypeHaving(x, typeTeXRaw);
+}
+
+export function isTeXChar(x: any): x is TeXChar {
+    return x !== undefined
+        // && x.charCode !== undefined
+        && typeof x === "number";
 }
 
 export function isTeXComm(x: any): x is TeXComm {
@@ -665,6 +695,7 @@ export function isTeXCommS(x: any): x is TeXCommS {
     return isTeXComm(x) && x.arguments.length === 0;
 }
 
+//noinspection JSUnusedLocalSymbols
 export function isTeXEnv(x: any, name?: string): x is TeXEnv {
     return isTypeHaving(x, typeTeXEnv)
         ;
@@ -682,10 +713,12 @@ export function isTeXBraces(x: any): x is TeXBraces {
     return isLaTeXHaving(x) && isTypeHaving(x, typeTeXBraces);
 }
 
+//noinspection JSUnusedGlobalSymbols
 export function isFixArg(x: any): x is FixArg {
     return isTypeHaving(x, "FixArg");
 }
 
+//noinspection JSUnusedGlobalSymbols
 export function isOptArg(x: any): x is OptArg {
     return isTypeHaving(x, "OptArg");
 }
@@ -708,32 +741,38 @@ export function isTeXEmpty(e: any) {
 //
 // constructors
 //
+export type LaTeXTxt = LaTeXRaw | TeXChar;
 
-export function newFixArg(l: LaTeX[]): FixArg {
+export function newFixArg(l: LaTeXTxt[]): FixArg {
     return {type: "FixArg", latex: l};
 }
-export function newOptArg(l: LaTeX[]): MOptArg | OptArg {
-    return l.length === 1 ? {type: "OptArg", latex: l[0]} : {type: "MOptArg", latex: l};
+export function newOptArg(l: LaTeXTxt[]): MOptArg | OptArg {
+    return l.length === 1 ? {type: "OptArg", latex: l} : {type: "MOptArg", latex: l};
 }
-export function newSymArg(l: LaTeX): SymArg {
-    return {type: "SymArg", latex: l};
+//noinspection JSUnusedGlobalSymbols
+export function newSymArg(l: LaTeXRaw): SymArg {
+    return {type: "SymArg", latex: [l]};
 }
-export function newParArg(l: LaTeX): ParArg {
-    return {type: "ParArg", latex: l};
+//noinspection JSUnusedGlobalSymbols
+export function newParArg(l: LaTeXRaw): ParArg {
+    return {type: "ParArg", latex: [l]};
 }
-export function newMOptArg(l: LaTeX[]): MOptArg {
+//noinspection JSUnusedGlobalSymbols
+export function newMOptArg(l: LaTeXRaw[]): MOptArg {
     return {type: "MOptArg", latex: l};
 }
-export function newMSymArg(l: LaTeX[]): MSymArg {
+//noinspection JSUnusedGlobalSymbols
+export function newMSymArg(l: LaTeXRaw[]): MSymArg {
     return {type: "MSymArg", latex: l};
 }
-export function newMParArg(l: LaTeX[]): MParArg {
+//noinspection JSUnusedGlobalSymbols
+export function newMParArg(l: LaTeXRaw[]): MParArg {
     return {type: "MParArg", latex: l};
 }
 
 /**
  Constructor for commands with no arguments.
- */
+ */ //noinspection JSUnusedGlobalSymbols
 export function newCommandS(name: string): TeXCommS {
     return {
         name,
@@ -742,28 +781,31 @@ export function newCommandS(name: string): TeXCommS {
     };
 }
 
+
 export function newTeXRaw(text: string): TeXRaw {
     return {
         text,
-        type: typeTeXRaw
+        type: typeTeXRaw,
+        characterCategories: convertToTeXCharsDefault(text)
     };
 }
 
-export function newTeXMath(type: MathType, latex: LaTeX): TeXMath {
+export function newTeXMath(type: MathType, latex: LaTeXRaw[]): TeXMath {
     return {
         latex,
         type
     };
 }
 
-export function newTeXBraces(latex: LaTeX): TeXBraces {
+//noinspection JSUnusedGlobalSymbols
+export function newTeXBraces(latex: LaTeXRaw): TeXBraces {
     return {
-        latex,
+        latex: [latex],
         type: typeTeXBraces
     };
 }
 
-export const newTeXMathDol: (l: LaTeX) => TeXMath = newTeXMath.bind(undefined, "Dollar");
+export const newTeXMathDol: (l: LaTeXRaw[]) => TeXMath = newTeXMath.bind(undefined, "Dollar");
 
 export function newTeXComment(text: string): TeXComment {
     return {
@@ -790,7 +832,7 @@ export function newTeXComm(name: string, ...args: TeXArg[]): TeXComm {
  * Second, its content.
  * Third, its arguments.
  */
-export function newTeXEnv(name: string, latex: LaTeX[], ...args: TeXArg[]): TeXEnv {
+export function newTeXEnv(name: string, latex: LaTeXRaw[], ...args: TeXArg[]): TeXEnv {
     return {
         name,
         latex,
@@ -799,10 +841,28 @@ export function newTeXEnv(name: string, latex: LaTeX[], ...args: TeXArg[]): TeXE
     };
 }
 
-renderToTex(tex: LaTeX): string {
-    
-    
-    // TODO 
-    
-    return "";
-}
+// export function cleanTexRaw(tex: LaTeX[]): LaTeXNoRaw[] {
+//     let newArray: LaTeXNoRaw[] = [];
+//     tex.forEach(tex => {
+//         if (isTeXRaw(tex))
+//             newArray = newArray.concat(convertToTeXChars(
+//                 uni => defaultCategories(uni),
+//                 tex.text
+//             ));
+//         else if (isTeXComm(tex)) {
+//             const newArgs: LaTeXNoRaw[] = cleanTexRaw(tex.arguments);
+//             newArray.push(newTeXComm(tex.name, newArgs));
+//         }
+//         else if (isTeXEnv(tex)) newArray.push(newTeXEnv());
+//         else if (isTeXMath(tex)) newArray.push(newTeXMath());
+//         else if (isTeXBraces(tex)) newArray.push(newTeXBraces());
+//         else if (isTeXComment(tex)) newArray.push(newTeXComment());
+//         else newArray.push(tex);
+//     });
+//     return newArray;
+// }
+//
+// export function renderToTex(tex: LaTeX): string {
+//     // TODO
+//     return "";
+// }

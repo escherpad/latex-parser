@@ -2,16 +2,25 @@ import "mocha";
 
 import {expect} from "chai";
 import {
-    mathTypes, newFixArg, newOptArg, newTeXComm, newTeXComment, newTeXEnv, newTeXMath, newTeXMathDol, newTeXRaw,
+    LaTeXNoRaw,
+    LaTeXRaw,
+    newFixArg,
+    newOptArg,
+    newTeXComm,
+    newTeXComment,
+    newTeXEnv,
+    newTeXMathDol,
+    newTeXRaw,
     TeXComment
 } from "../../../../src/Text/LaTeX/Base/Syntax";
 
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    text, environment
+    text, environment, latexParser
 } from "../../../../src/Text/LaTeX/Base/Parser";
 import {custom, Result, Success} from "parsimmon";
+import {convertToTeXCharsDefault} from "../../../../src/Text/TeX/CategoryCode";
 
 
 describe("Parser", () => {
@@ -40,7 +49,7 @@ describe("Parser", () => {
     });
 
     it("cmd", () => {
-        expect(mustBeOk(command.parse(`\\`)).value).to.deep.equal({});
+        expect(mustBeOk(command.parse(`\\`)).value).to.deep.equal(newTeXComm(""));
         expect(mustBeOk(command.parse(`\\^`)).value).to.deep.equal(newTeXComm("^"));
         expect(mustBeOk(command.parse(`\\aCmd`)).value).to.deep.equal(newTeXComm("aCmd"));
         expect(mustBeOk(command.parse(`\\aCmd[opt1][opt2]{fix}`)).value).to.deep.equal(
@@ -122,18 +131,12 @@ describe("Parser", () => {
             txt
             }`)).value).to.deep.equal(
                 newFixArg([
-                    {
-                        "text": "txt\n            and ",
-                        "type": "TeXRaw"
-                    },
+                    newTeXRaw("txt\n            and "),
                     {
                         "text": "comment",
                         "type": "TeXComment"
                     },
-                    {
-                        "text": "            txt\n            ",
-                        "type": "TeXRaw"
-                    }
+                    newTeXRaw("            txt\n            ")
                 ])
             );
         });

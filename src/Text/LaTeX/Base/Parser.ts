@@ -20,14 +20,19 @@ import {
 
 import {
     FixArg,
-    LaTeX,
+    LaTeXRaw,
     MathType, MOptArg,
     newFixArg,
     newOptArg,
     newTeXComm,
-    newTeXComment, newTeXEnv, newTeXMath, OptArg, TeXArg, TeXComm,
+    newTeXComment,
+    newTeXEnv,
+    newTeXMath,
+    OptArg,
+    TeXArg,
+    TeXComm,
     TeXComment,
-    TeXEmpty, TeXEnv,
+    TeXEnv,
     TeXMath
 } from "./Syntax";
 import {TeXRaw} from "./Syntax";
@@ -313,11 +318,14 @@ const lbrace = "{";
 const rbrace = "}";
 const lbracket = "[";
 const rbracket = "]";
+//noinspection JSUnusedLocalSymbols
 const comma = ",";
+//noinspection JSUnusedLocalSymbols
 const colon = ":";
 
 const openingBracket = string(lbracket);
 const closingBracket = string(rbracket);
+//noinspection JSUnusedLocalSymbols
 const isClosingbracket = (str: string) => str === (rbracket);
 
 function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
@@ -424,12 +432,12 @@ export const notTextDefault = {
 };
 
 export const notTextDefaultAndNotClosingBracket = {
-        "$": true,
-        "%": true,
-        "\\": true,
-        "{": true,
-        "}": true
-    };
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "}": true
+};
 
 export function isNotText(char: string, notText?: { [k: string]: boolean }) {
     const chars = notText === undefined ? notTextDefault : notText;
@@ -445,7 +453,7 @@ export const commandSymbol = string("\\");
  * Parser of a single 'LaTeX' block. Note: text stops on ']'; if the other parsers fail on the rest,
  * text2 handles it, starting with ']'
  */
-export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
+export const latexBlockParser: Parser<LaTeXRaw> = lazy(() => alt(
     alt(
         text              // <?> "text"
         , dolMath         // <?> "inline math ($)"
@@ -457,7 +465,7 @@ export const latexBlockParser: Parser<LaTeX> = lazy(() => alt(
     )
 );
 
-export const latexParser: Parser<LaTeX[]> = latexBlockParser.many();
+export const latexParser: Parser<LaTeXRaw[]> = latexBlockParser.many();
 
 const anonym = string(lbrace)
     .then(
@@ -559,10 +567,10 @@ export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
 /**
  * Command
  */
-export const command: Parser<TeXComm | TeXEmpty> = alt(
-    commandSymbol.then(eof).map(() => {
-        return {};
-    }),
+export const command: Parser<TeXComm> = // alt(
+    // commandSymbol.then(eof).map(() => {
+    //     return {};
+    // }),
 
     seqMap(
         commandSymbol,
@@ -572,7 +580,7 @@ export const command: Parser<TeXComm | TeXEmpty> = alt(
         function (ignored, name, argz) {
             return argz !== undefined ? newTeXComm(name, ...argz) : newTeXComm(name);
         }
-    )
+    // )
 ).map(res => {
     return res;
 });
@@ -586,9 +594,11 @@ function math(t: MathType,
               sMath = "$",
               eMath = "$"): Parser<TeXMath> {
     return string(sMath)
-        .then(latexBlockParser.many())
+        .then(
+            latexBlockParser.many()
+                .map(str => newTeXMath(t, str))
+        )
         .skip(string(eMath))
-        .map(str => newTeXMath(t, str))
         ;
 }
 
@@ -600,6 +610,7 @@ export function isNotOk<T>(parse?: any): parse is Failure {
     return parse !== undefined && parse.status === false;
 }
 export function mustBeOk<T>(parse?: ResultInterface<T>): Success<T> {
-    if (!isOk(parse)) throw new Error("Expected parse to be success: " + JSON.stringify(parse));
+    if (!isOk(parse))
+        throw new Error("Expected parse to be success: " + JSON.stringify(parse));
     return parse;
 }
