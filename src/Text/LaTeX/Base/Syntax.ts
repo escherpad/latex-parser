@@ -798,3 +798,11 @@ export function newTeXEnv(name: string, latex: LaTeX[], ...args: TeXArg[]): TeXE
         type: typeTeXEnv
     };
 }
+
+renderToTex(tex: LaTeX): string {
+    
+    
+    // TODO 
+    
+    return "";
+}
