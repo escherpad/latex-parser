@@ -1,8 +1,11 @@
+import {concatMap, isNumber, mustBeArray, snd} from "../../../Utils";
+
 /** LaTeX syntax description in the definition of the 'LaTeX' datatype.
  If you want to add new commands or environments not defined in
  the library, import this module and use 'LaTeX' data constructors.
  module Text.LaTeX.Base.Syntax
  */
+
 /**
  ( -- * @LaTeX@ datatype
  Measure (..)
@@ -52,8 +55,6 @@
 
  This will create a blac box (see 'rule') as wide as the text and two points tall.
  */
-import {concatMap, isNumber, mustBeArray, snd} from "../../../Utils";
-
 export type Measure = BuiltInMeasure | CustomMeasure;
 // deriving (
 // Data

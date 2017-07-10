@@ -1,6 +1,6 @@
 {
   "name": "latex-parser",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "LaTeX parser",
   "keywords": [
     "LaTeX",
@@ -51,7 +51,7 @@
     "tslint": "^5.4.3",
     "tslint-loader": "^3.5.3",
     "typescript": "^2.3.4",
-    "webpack": "^2.6.1"
+    "webpack": "^3.1.0"
   },
   "scripts": {
     "p": "ts-node parjstest.ts",
