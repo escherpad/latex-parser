@@ -1,11 +1,10 @@
 import "mocha";
 
 import {expect} from "chai";
+
 import {
-    LaTeXNoRaw,
-    LaTeXRaw,
     newFixArg,
-    newOptArg,
+    newOptArg, newSubOrSuperScript,
     newTeXComm,
     newTeXComment,
     newTeXEnv,
@@ -17,7 +16,7 @@ import {
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    text, environment, latexParser
+    environment, latexParser, notTextDefault, textParser
 } from "../../../../src/Text/LaTeX/Base/Parser";
 import {custom, Result, Success} from "parsimmon";
 import {convertToTeXCharsDefault} from "../../../../src/Text/TeX/CategoryCode";
@@ -86,17 +85,17 @@ describe("Parser", () => {
 
     // todo experiment nottext
     it("text", () => {
-        expect(mustBeOk(text.parse("lol")).value).to.deep.equal(
+        expect(mustBeOk(textParser(notTextDefault).parse("lol")).value).to.deep.equal(
             newTeXRaw("lol")
         );
-        expect(mustBeOk(text.parse(" l o l ")).value).to.deep.equal(
+        expect(mustBeOk(textParser(notTextDefault).parse(" l o l ")).value).to.deep.equal(
             newTeXRaw(" l o l ")
         );
-        expect(mustBeOk(text.parse(" ")).value).to.deep.equal(
+        expect(mustBeOk(textParser(notTextDefault).parse(" ")).value).to.deep.equal(
             newTeXRaw(" ")
         );
-        expect(text.parse("").status).to.be.false;
-        expect(text.parse("l%ol").status).to.be.false;
+        expect(textParser(notTextDefault).parse("").status).to.be.false;
+        expect(textParser(notTextDefault).parse("l%ol").status).to.be.false;
     });
 
     describe("latexBlockParser", () => {
@@ -121,7 +120,8 @@ describe("Parser", () => {
         });
     });
 
-    describe("Math", () => {
+
+    describe("Args", () => {
         it("fixArg", () => {
             expect(mustBeOk(fixArg.parse("{}")).value).to.deep.equal(
                 newFixArg([])
@@ -140,8 +140,11 @@ describe("Parser", () => {
                 ])
             );
         });
+    });
 
-        it("dolMath", () => {
+    describe("Math", () => {
+
+        it("should recognize math mode", () => {
             expect(mustBeOk(dolMath.parse(`$$`)).value).to.deep.equal(
                 newTeXMathDol([])
             );
@@ -153,10 +156,18 @@ describe("Parser", () => {
             expect(mustBeOk(dolMath.parse(`$ lol $`)).value).to.deep.equal(
                 newTeXMathDol([newTeXRaw(" lol ")])
             );
+
         });
-        it("math", () => {
-            expect(mustBeOk(comment.parse(`% u h h h `)).value).to.deep.equal(
-                newTeXComment(" u h h h ")
+
+        it("should parse superscript and subscript", () => {
+            expect(mustBeOk(dolMath.parse(`$ 1_{a} 2^{b} $`)).value).to.deep.equal(
+                newTeXMathDol([
+                    newTeXRaw(" 1"),
+                    newSubOrSuperScript("_", [newFixArg([newTeXRaw("a")])]),
+                    newTeXRaw(" 2"),
+                    newSubOrSuperScript("^", [newFixArg([newTeXRaw("b")])]),
+                    newTeXRaw(" "),
+                ])
             );
         });
     });

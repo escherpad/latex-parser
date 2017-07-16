@@ -23,12 +23,12 @@ import {
     LaTeXRaw,
     MathType, MOptArg,
     newFixArg,
-    newOptArg,
+    newOptArg, newSubOrSuperScript,
     newTeXComm,
     newTeXComment,
     newTeXEnv,
     newTeXMath,
-    OptArg,
+    OptArg, SubOrSuperScript, SubOrSuperSymbol,
     TeXArg,
     TeXComm,
     TeXComment,
@@ -44,6 +44,7 @@ import {
 } from "../../../Utils";
 import {makeFailure} from "parsimmon";
 import {eof} from "parsimmon";
+import XUnit = Mocha.reporters.XUnit;
 
 /** The /LaTeX/ parser.
 
@@ -328,6 +329,46 @@ const closingBracket = string(rbracket);
 //noinspection JSUnusedLocalSymbols
 const isClosingbracket = (str: string) => str === (rbracket);
 
+export const notTextDefault = {
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "]": true,
+    "}": true
+};
+
+export const notTextMathMode = {
+    "^": true,
+    "_": true,
+
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "]": true,
+    "}": true
+};
+
+export const notTextMathModeAndNotClosingBracket = {
+    "^": true,
+    "_": true,
+
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "}": true
+};
+
+export const notTextDefaultAndNotClosingBracket = {
+    "$": true,
+    "%": true,
+    "\\": true,
+    "{": true,
+    "}": true
+};
+
 function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
     return Parser((str, i): Result<string> => {
         const firstChar = str.charAt(i);
@@ -347,19 +388,20 @@ function takeAtLeastOneTill(till: (s: string) => boolean): Parser<string> {
     });
 }
 
+export function textParser(notText: { [k: string]: boolean }) {
+    return takeAtLeastOneTill(isNotText(notText))
+        .map(match => newTeXRaw(match))
+        ;
+}
+
 /** Text is a sequence on characters that are not non-text*/
 // TODO use character codes
-export const text = takeAtLeastOneTill(isNotText)
-    .map(match => newTeXRaw(match))
-;
+const text = textParser(notTextDefault);
 
 /**
  * Text without stopping on ']'
  */
-export const text2 = closingBracket.then(
-    takeAtLeastOneTill(isNotText)
-        .map(match => newTeXRaw(match))
-);
+const text2 = textParser(notTextDefaultAndNotClosingBracket);
 
 const spaces: Parser<TeXRaw> = regexp(/ */)
     .map(newTeXRaw);
@@ -422,26 +464,8 @@ export function isSpecialCharacter(char: string, specialChars?: { [k: string]: b
 }
 
 
-export const notTextDefault = {
-    "$": true,
-    "%": true,
-    "\\": true,
-    "{": true,
-    "]": true,
-    "}": true
-};
-
-export const notTextDefaultAndNotClosingBracket = {
-    "$": true,
-    "%": true,
-    "\\": true,
-    "{": true,
-    "}": true
-};
-
-export function isNotText(char: string, notText?: { [k: string]: boolean }) {
-    const chars = notText === undefined ? notTextDefault : notText;
-    return chars.hasOwnProperty(char);
+export function isNotText(notText: { [k: string]: boolean }) {
+    return (char: string) => notText.hasOwnProperty(char);
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -455,15 +479,30 @@ export const commandSymbol = string("\\");
  */
 export const latexBlockParser: Parser<LaTeXRaw> = lazy(() => alt(
     alt(
-        text              // <?> "text"
+        textParser(notTextDefault) // <?> "text"
         , dolMath         // <?> "inline math ($)"
         , comment         // <?> "comment"
-        , text2           // <?> "text2"
+        , textParser(notTextDefaultAndNotClosingBracket)           // <?> "text2"
         , environment     // <?> "environment"
         , command         // <?> "command"
     )
     )
 );
+
+export const latexBlockParserMathMode = (sub: string, sup: string): Parser<LaTeXRaw> => {
+    return lazy(() => alt(
+        alt(
+            shiftedScript(sub, sup)
+            , textParser(notTextMathMode)              // <?> "text"
+            , dolMath         // <?> "inline math ($)"
+            , comment         // <?> "comment"
+            , textParser(notTextMathModeAndNotClosingBracket)           // <?> "text2"
+            , environment     // <?> "environment"
+            , command         // <?> "command"
+        )
+        )
+    );
+};
 
 export const latexParser: Parser<LaTeXRaw[]> = latexBlockParser.many();
 
@@ -580,22 +619,44 @@ export const command: Parser<TeXComm> = // alt(
         function (ignored, name, argz) {
             return argz !== undefined ? newTeXComm(name, ...argz) : newTeXComm(name);
         }
-    // )
-).map(res => {
-    return res;
-});
+        // )
+    ).map(res => {
+        return res;
+    });
 
+export const subOrSuperscriptSymbolParser: (a: string, b: string) => Parser<SubOrSuperSymbol> = function (subscriptSymbol, superscriptSymbol) {
+    return alt(
+        string(subscriptSymbol),
+        string(superscriptSymbol)
+    ).map(parsedStr => (parsedStr === subscriptSymbol ? "_" : "^"));
+};
+
+/**
+ * (sub/super)-script
+ */
+export const shiftedScript = (sub: string, sup: string): Parser<SubOrSuperScript> => { // alt(
+    return seqMap(
+        subOrSuperscriptSymbolParser(sub, sup),
+        cmdArgs,
+
+        function (symbol, argz) {
+            return newSubOrSuperScript(symbol, argz);
+        }
+    ).map(res => {
+        return res;
+    });
+};
 /**
  * Math
  */
-export const dolMath = math("Dollar");
+export const dolMath = math();
 
-function math(t: MathType,
+function math(t: MathType = "Dollar",
               sMath = "$",
               eMath = "$"): Parser<TeXMath> {
     return string(sMath)
         .then(
-            latexBlockParser.many()
+            latexBlockParserMathMode("_", "^").many()
                 .map(str => newTeXMath(t, str))
         )
         .skip(string(eMath))

@@ -192,6 +192,7 @@ export type TeXBuildingBlocks =
     TeXEnv |
     TeXMath |
     TeXLineBreak |
+    SubOrSuperScript |
     TeXBraces |
     TeXComment;
 
@@ -260,6 +261,11 @@ export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
 export type TeXEnv = MultipleLaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
 export type TeXMath = MultipleLaTeXHaving & MathTypeHaving; // Mathematical expressions.
 export type TeXBraces = LaTeXHaving & TypeHavingTeXBraces;
+export type SubOrSuperSymbol = "^" | "_";
+export interface SubOrSuperScript {
+    type: SubOrSuperSymbol;
+    arguments?: TeXArg[];
+}
 
 /**
  An expression between braces.
@@ -823,6 +829,13 @@ export function newTeXComm(name: string, ...args: TeXArg[]): TeXComm {
         name,
         arguments: args,
         type: typeTeXComm
+    };
+}
+
+export function newSubOrSuperScript(type: SubOrSuperSymbol, args?: TeXArg[]): SubOrSuperScript {
+    return {
+        type,
+        arguments: args
     };
 }
 
