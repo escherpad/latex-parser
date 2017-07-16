@@ -44,7 +44,6 @@ import {
 } from "../../../Utils";
 import {makeFailure} from "parsimmon";
 import {eof} from "parsimmon";
-import XUnit = Mocha.reporters.XUnit;
 
 /** The /LaTeX/ parser.
 
