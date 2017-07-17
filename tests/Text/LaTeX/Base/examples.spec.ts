@@ -8,7 +8,7 @@ import {
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    text, latexParser
+    latexParser
 } from "../../../../src/Text/LaTeX/Base/Parser";
 import {custom, Result, Success} from "parsimmon";
 
