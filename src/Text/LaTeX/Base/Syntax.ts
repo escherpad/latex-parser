@@ -874,8 +874,21 @@ export function newTeXEnv(name: string, latex: LaTeXRaw[], ...args: TeXArg[]): T
 //     });
 //     return newArray;
 // }
-//
-// export function renderToTex(tex: LaTeX): string {
-//     // TODO
-//     return "";
+
+// export function stringifyLaTeXInner(tex: LaTeX, soFar: string[]): void {
+//     if(isTeXComm(tex)){ 
+//         soFar.push("\\", tex.name); 
+//         args = tex.arguments.forEach(l => stringifyLaTeXInnersoFar(l, soFar));
+//         return soFar;
+//     }
+//     if(isTeXEnv(tex)) 
+//         return soFar;
+//     if(isTeXMath(tex)) 
+//     if(isTeXLineBreak(tex)) 
+//     if(isSubOrSuperScript(tex)) 
+//     if(isTeXBraces(tex)) 
+//     if(isTeXComment(tex)) 
+//     if(isTeXRaw(tex)) 
+//     if(isTeXChar(tex)) 
+//     return soFar;
 // }

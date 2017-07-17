@@ -4,3 +4,4 @@ node_modules
 /ts-compiled/
 /ts-compiled-webpack/
 /ts-compiled.*
+npm-debug.log
