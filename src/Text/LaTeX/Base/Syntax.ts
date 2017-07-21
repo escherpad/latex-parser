@@ -875,20 +875,35 @@ export function newTeXEnv(name: string, latex: LaTeXRaw[], ...args: TeXArg[]): T
 //     return newArray;
 // }
 
-// export function stringifyLaTeXInner(tex: LaTeX, soFar: string[]): void {
-//     if(isTeXComm(tex)){ 
-//         soFar.push("\\", tex.name); 
-//         args = tex.arguments.forEach(l => stringifyLaTeXInnersoFar(l, soFar));
-//         return soFar;
-//     }
-//     if(isTeXEnv(tex)) 
-//         return soFar;
-//     if(isTeXMath(tex)) 
-//     if(isTeXLineBreak(tex)) 
-//     if(isSubOrSuperScript(tex)) 
-//     if(isTeXBraces(tex)) 
-//     if(isTeXComment(tex)) 
-//     if(isTeXRaw(tex)) 
-//     if(isTeXChar(tex)) 
-//     return soFar;
-// }
+function stringifyLaTeXInner(tex: LaTeX, soFar: string[]): void {
+    if(isTeXComm(tex)){ 
+        soFar.push("\\", tex.name); 
+        args = tex.arguments.forEach(l => stringifyLaTeXInnersoFar(l, soFar));
+    }
+    else if(isTeXEnv(tex)) 
+        throw new Error("not supported yet");
+    else if(isTeXMath(tex)) 
+     throw new Error("not supported yet");
+    else if(isTeXLineBreak(tex)) 
+     throw new Error("not supported yet");
+    else if(isSubOrSuperScript(tex)) 
+     throw new Error("not supported yet");
+    else if(isTeXBraces(tex)) 
+     throw new Error("not supported yet");
+    else if(isTeXComment(tex)) 
+     soFar.push("%"+tex.text+"\n");
+    else if(isTeXRaw(tex)) 
+     soFar.push(tex.text);
+    else if(isTeXChar(tex))
+     throw new Error("not supported yet");
+    else if(isFixArg(tex)) {
+     soFar.push("{");
+     tex.latex.forEach(t=>stringifyLatexInner(t, soFar));
+     soFar.push("}");
+    }
+    else if(isOptArg(tex)) {
+     soFar.push("[");
+     tex.latex.forEach(t=>stringifyLatexInner(t, soFar));
+     soFar.push("]");
+    }
+}
