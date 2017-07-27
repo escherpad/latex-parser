@@ -20,6 +20,13 @@ https://tex.stackexchange.com/questions/222500/why-is-latex-so-complicated)
 
 
 ## Usage
+[Install from NPM](https://www.npmjs.com/package/latex-parser): 
+```sh
+npm install latex-parser
+```
+
+Or download the [latest standalone JavaScript file (ES5)](https://github.com/digitalheir/latex-parser/releases/latest).
+
 ```js
 import {latexParser} from "latex-parser";
 
