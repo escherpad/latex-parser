@@ -4,6 +4,7 @@
 *.tgz
 /node_modules/
 /sources/
+/src/
 /tests/
 /deprecated/
 /latex-parser.min.js
