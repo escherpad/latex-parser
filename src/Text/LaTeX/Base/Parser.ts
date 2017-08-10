@@ -269,6 +269,8 @@ function manyTillAndMap<T, U, V>(manyOf: Parser<T>, till: Parser<U>, map: (acc: 
         return mustBeOk(mergeReplies(result2, result));
     });
 }
+
+// todo the functions that use this should retain start and stop indices from the input string!
 function manyTill<T, U>(manyOf: Parser<T>, till: Parser<U>) {
     return manyTillAndMap(manyOf, till, (a: T[], el: T) => a.concat([el]), <T[]>[]);
 
