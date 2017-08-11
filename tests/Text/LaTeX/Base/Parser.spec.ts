@@ -4,28 +4,30 @@ import {expect} from "chai";
 
 import {
     newFixArg,
-    newOptArg, newSubOrSuperScript,
+    newOptArg,
+    newSubOrSuperScript,
     newTeXComm,
     newTeXComment,
     newTeXEnv,
     newTeXMathDol,
-    newTeXRaw,
+    newTeXRaw, SubOrSuperSymbol,
     TeXComment
 } from "../../../../src/Text/LaTeX/Base/Syntax";
 
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    environment, latexParser, notTextDefault, textParser
+    environment, notTextDefault, textParser
 } from "../../../../src/Text/LaTeX/Base/Parser";
-import {custom, Result, Success} from "parsimmon";
-import {convertToTeXCharsDefault} from "../../../../src/Text/TeX/CategoryCode";
-
 
 describe("Parser", () => {
 
     it("comment", () => {
-        expect(mustBeOk(comment.parse(`% u h h h `)).value).to.deep.equal(
+
+        const parse = comment.parse(`% u h h h `);
+        const success = mustBeOk(parse);
+
+        expect(success.value).to.deep.equal(
             newTeXComment(" u h h h ")
         );
         expect(mustBeOk(comment.parse("%a\n")).value).to.deep.equal(
@@ -163,9 +165,9 @@ describe("Parser", () => {
             expect(mustBeOk(dolMath.parse(`$ 1_{a} 2^{b} $`)).value).to.deep.equal(
                 newTeXMathDol([
                     newTeXRaw(" 1"),
-                    newSubOrSuperScript("_", [newFixArg([newTeXRaw("a")])]),
+                    newSubOrSuperScript(SubOrSuperSymbol.SUB, "_", [newFixArg([newTeXRaw("a")])]),
                     newTeXRaw(" 2"),
-                    newSubOrSuperScript("^", [newFixArg([newTeXRaw("b")])]),
+                    newSubOrSuperScript(SubOrSuperSymbol.SUP, "^", [newFixArg([newTeXRaw("b")])]),
                     newTeXRaw(" "),
                 ])
             );

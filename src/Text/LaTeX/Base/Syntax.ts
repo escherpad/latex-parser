@@ -131,9 +131,9 @@ export interface NameHaving {
 
 export function isNameHaving(x: any, name?: string): x is NameHaving {
     return x !== undefined && (name === undefined
-                ? typeof x.name === "string"
-                : name === x.name
-        );
+            ? typeof x.name === "string"
+            : name === x.name
+    );
 }
 
 export interface CharCodeHaving {
@@ -156,6 +156,7 @@ export function isTextHaving(x: any): x is TextHaving {
 export interface LaTeXHaving {
     latex: LaTeXTxt[];
 }
+
 export type MultipleLaTeXHaving = LaTeXHaving;
 
 export function isLaTeXHaving(x: any): x is LaTeXHaving {
@@ -214,24 +215,28 @@ export interface TypeHavingTeXSeq extends TypeHaving {
 
 export type TypeTeXEnv = "TeXEnv";
 export const typeTeXEnv: TypeTeXEnv = "TeXEnv";
+
 export interface TypeHavingTeXEnv extends TypeHaving {
     type: TypeTeXEnv;
 }
 
 export type TypeTeXBraces = "TeXBraces";
 export const typeTeXBraces: TypeTeXBraces = "TeXBraces";
+
 export interface TypeHavingTeXBraces extends TypeHaving {
     type: TypeTeXBraces;
 }
 
 export type TypeTeXComment = "TeXComment";
 export const typeTeXComment: TypeTeXComment = "TeXComment";
+
 export interface TypeHavingTeXComment extends TypeHaving {
     type: TypeTeXComment;
 }
 
 export type TypeTeXRaw = "TeXRaw";
 export const typeTeXRaw: TypeTeXRaw = "TeXRaw";
+
 export interface TypeHavingTeXRaw extends TypeHaving {
     type: TypeTeXRaw;
 }
@@ -244,6 +249,7 @@ export interface TypeHavingTeXRaw extends TypeHaving {
 
 export type TypeTeXComm = "TeXComm" | TypeTeXCommS;
 export const typeTeXComm: TypeTeXComm = "TeXComm";
+
 export interface TypeHavingTeXComm extends TypeHaving {
     type: TypeTeXComm;
 }
@@ -259,11 +265,26 @@ export type TeXRaw = TextHaving & TypeHavingTeXRaw & CharacterCatergiesHaving; /
 export type TeXComment = TextHaving & TypeHavingTeXComment; // Comments.
 export type TeXComm = NameHaving & ArgumentHaving & TypeHavingTeXComm;
 export type TeXEnv = MultipleLaTeXHaving & NameHaving & ArgumentHaving & TypeHavingTeXEnv;
-export type TeXMath = MultipleLaTeXHaving & MathTypeHaving; // Mathematical expressions.
+
+/**
+ * Mathematical expression
+ */
+export interface TeXMath extends MultipleLaTeXHaving, MathTypeHaving {
+    startSymbol: string;
+    endSymbol: string;
+}
+
 export type TeXBraces = LaTeXHaving & TypeHavingTeXBraces;
-export type SubOrSuperSymbol = "^" | "_";
+
+export enum SubOrSuperSymbol {SUP, SUB}
+
+export function isSubOrSuperSymbol(x: any): x is SubOrSuperSymbol {
+    return x === SubOrSuperSymbol.SUP || x === SubOrSuperSymbol.SUB;
+}
+
 export interface SubOrSuperScript {
     type: SubOrSuperSymbol;
+    symbol: string;
     arguments?: TeXArg[];
 }
 
@@ -323,19 +344,32 @@ export type MOptArg = MultipleLaTeXHaving & TypeHavingMOptArg; // Multiple optio
 export type MSymArg = MultipleLaTeXHaving & TypeHavingMSymArg; // Version of 'SymArg' with multiple options.
 export type MParArg = MultipleLaTeXHaving & TypeHavingMParArg; // Version of 'ParArg' with multiple options.
 
-export interface TypeHavingFixArg extends TypeHaving {type: "FixArg";
+export interface TypeHavingFixArg extends TypeHaving {
+    type: "FixArg";
 }
-export interface TypeHavingOptArg extends TypeHaving {type: "OptArg";
+
+export interface TypeHavingOptArg extends TypeHaving {
+    type: "OptArg";
 }
-export interface TypeHavingMOptArg extends TypeHaving {type: "MOptArg";
+
+export interface TypeHavingMOptArg extends TypeHaving {
+    type: "MOptArg";
 }
-export interface TypeHavingSymArg extends TypeHaving {type: "SymArg";
+
+export interface TypeHavingSymArg extends TypeHaving {
+    type: "SymArg";
 }
-export interface TypeHavingMSymArg extends TypeHaving {type: "MSymArg";
+
+export interface TypeHavingMSymArg extends TypeHaving {
+    type: "MSymArg";
 }
-export interface TypeHavingParArg extends TypeHaving {type: "ParArg";
+
+export interface TypeHavingParArg extends TypeHaving {
+    type: "ParArg";
 }
-export interface TypeHavingMParArg extends TypeHaving {type: "MParArg";
+
+export interface TypeHavingMParArg extends TypeHaving {
+    type: "MParArg";
 }
 
 //
@@ -715,6 +749,10 @@ export function isTeXLineBreak(x: any): x is TeXLineBreak {
     return x !== undefined && typeof x.noNewPage === "boolean" && (x.measure === undefined || isMeasure(x.measure));
 }
 
+export function isSubOrSuperScript(x: any): x is SubOrSuperScript {
+    return isSubOrSuperSymbol(x.type);
+}
+
 export function isTeXBraces(x: any): x is TeXBraces {
     return isLaTeXHaving(x) && isTypeHaving(x, typeTeXBraces);
 }
@@ -752,25 +790,31 @@ export type LaTeXTxt = LaTeXRaw | TeXChar;
 export function newFixArg(l: LaTeXTxt[]): FixArg {
     return {type: "FixArg", latex: l};
 }
+
 export function newOptArg(l: LaTeXTxt[]): MOptArg | OptArg {
     return l.length === 1 ? {type: "OptArg", latex: l} : {type: "MOptArg", latex: l};
 }
+
 //noinspection JSUnusedGlobalSymbols
 export function newSymArg(l: LaTeXRaw): SymArg {
     return {type: "SymArg", latex: [l]};
 }
+
 //noinspection JSUnusedGlobalSymbols
 export function newParArg(l: LaTeXRaw): ParArg {
     return {type: "ParArg", latex: [l]};
 }
+
 //noinspection JSUnusedGlobalSymbols
 export function newMOptArg(l: LaTeXRaw[]): MOptArg {
     return {type: "MOptArg", latex: l};
 }
+
 //noinspection JSUnusedGlobalSymbols
 export function newMSymArg(l: LaTeXRaw[]): MSymArg {
     return {type: "MSymArg", latex: l};
 }
+
 //noinspection JSUnusedGlobalSymbols
 export function newMParArg(l: LaTeXRaw[]): MParArg {
     return {type: "MParArg", latex: l};
@@ -796,10 +840,12 @@ export function newTeXRaw(text: string): TeXRaw {
     };
 }
 
-export function newTeXMath(type: MathType, latex: LaTeXRaw[]): TeXMath {
+export function newTeXMath(type: MathType, startSymbol: string, endSymbol: string, latex: LaTeXRaw[]): TeXMath {
     return {
         latex,
-        type
+        type,
+        startSymbol,
+        endSymbol
     };
 }
 
@@ -811,7 +857,9 @@ export function newTeXBraces(latex: LaTeXRaw): TeXBraces {
     };
 }
 
-export const newTeXMathDol: (l: LaTeXRaw[]) => TeXMath = newTeXMath.bind(undefined, "Dollar");
+export const newTeXMathDol: (l: LaTeXRaw[]) => TeXMath = function (latex: LaTeXRaw[]) {
+    return newTeXMath("Dollar", "$", "$", latex);
+};
 
 export function newTeXComment(text: string): TeXComment {
     return {
@@ -832,9 +880,12 @@ export function newTeXComm(name: string, ...args: TeXArg[]): TeXComm {
     };
 }
 
-export function newSubOrSuperScript(type: SubOrSuperSymbol, args?: TeXArg[]): SubOrSuperScript {
+export function newSubOrSuperScript(type: SubOrSuperSymbol,
+                                    symbol: string,
+                                    args?: TeXArg[]): SubOrSuperScript {
     return {
         type,
+        symbol,
         arguments: args
     };
 }
@@ -875,35 +926,48 @@ export function newTeXEnv(name: string, latex: LaTeXRaw[], ...args: TeXArg[]): T
 //     return newArray;
 // }
 
-function stringifyLaTeXInner(tex: LaTeX, soFar: string[]): void {
-    if(isTeXComm(tex)){ 
-        soFar.push("\\", tex.name); 
-        args = tex.arguments.forEach(l => stringifyLaTeXInnersoFar(l, soFar));
+export function stringifyLaTeX(tex: LaTeX | TeXArg): string {
+    const arr: string[] = [];
+    (stringifyLaTeXInner(tex, arr));
+    return arr.join("");
+}
+
+function stringifyLaTeXInner(tex: LaTeX | TeXArg, soFar: string[]): void {
+    if (isTeXComm(tex)) {
+        soFar.push("\\", tex.name);
+        tex.arguments.forEach(l => stringifyLaTeXInner(l, soFar));
     }
-    else if(isTeXEnv(tex)) 
+    else if (isTeXEnv(tex))
         throw new Error("not supported yet");
-    else if(isTeXMath(tex)) 
-     throw new Error("not supported yet");
-    else if(isTeXLineBreak(tex)) 
-     throw new Error("not supported yet");
-    else if(isSubOrSuperScript(tex)) 
-     throw new Error("not supported yet");
-    else if(isTeXBraces(tex)) 
-     throw new Error("not supported yet");
-    else if(isTeXComment(tex)) 
-     soFar.push("%"+tex.text+"\n");
-    else if(isTeXRaw(tex)) 
-     soFar.push(tex.text);
-    else if(isTeXChar(tex))
-     throw new Error("not supported yet");
-    else if(isFixArg(tex)) {
-     soFar.push("{");
-     tex.latex.forEach(t=>stringifyLatexInner(t, soFar));
-     soFar.push("}");
+    else if (isTeXMath(tex)) {
+        soFar.push(tex.startSymbol);
+        tex.latex.forEach(t => stringifyLaTeXInner(t, soFar));
+        soFar.push(tex.endSymbol);
     }
-    else if(isOptArg(tex)) {
-     soFar.push("[");
-     tex.latex.forEach(t=>stringifyLatexInner(t, soFar));
-     soFar.push("]");
+    else if (isTeXLineBreak(tex))
+        soFar.push("\n");
+    else if (isSubOrSuperScript(tex)) {
+        soFar.push(tex.symbol);
+        if (tex.arguments)
+            tex.arguments.forEach(arg => (stringifyLaTeXInner(arg, soFar)));
+    } else if (isTeXBraces(tex)) {
+        soFar.push("{");
+        tex.latex.forEach(t => stringifyLaTeXInner(t, soFar));
+        soFar.push("}");
+    } else if (isTeXComment(tex)) {
+        soFar.push("%" + tex.text + "\n");
+    } else if (isTeXRaw(tex))
+        soFar.push(tex.text);
+    else if (isTeXChar(tex))
+        throw new Error("not supported yet");
+    else if (isFixArg(tex)) {
+        soFar.push("{");
+        tex.latex.forEach(t => stringifyLaTeXInner(t, soFar));
+        soFar.push("}");
     }
+    else if (isOptArg(tex)) {
+        soFar.push("[");
+        tex.latex.forEach(t => stringifyLaTeXInner(t, soFar));
+        soFar.push("]");
+    } else throw new Error("Did not recognize " + JSON.stringify(tex));
 }

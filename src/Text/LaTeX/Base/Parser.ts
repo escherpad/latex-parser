@@ -13,17 +13,16 @@ import {
     ResultInterface,
     makeSuccess,
     Failure,
-    test,
-    seq
+    test
 } from "parsimmon";
-// import  from "parsimmon";
 
 import {
     FixArg,
     LaTeXRaw,
     MathType, MOptArg,
     newFixArg,
-    newOptArg, newSubOrSuperScript,
+    newOptArg,
+    newSubOrSuperScript,
     newTeXComm,
     newTeXComment,
     newTeXEnv,
@@ -38,12 +37,10 @@ import {
 import {TeXRaw} from "./Syntax";
 import {newTeXRaw} from "./Syntax";
 import {
-    mconcat,
     mustBeNumber,
     mustNotBeUndefined
 } from "../../../Utils";
 import {makeFailure} from "parsimmon";
-import {eof} from "parsimmon";
 
 /** The /LaTeX/ parser.
 
@@ -169,6 +166,7 @@ const takeTillNewline = regexp(/[^\n]*/);
 const maybeNewline = regexp(/\n?/);
 const whitespace = regexp(/\s*/m);
 const commentSymbol = string("%");
+
 /**
  Returns the sorted set union of two arrays of strings. Note that if both
  arrays are empty, it simply returns the first array, and if exactly one
@@ -569,7 +567,8 @@ export const fixArg: Parser<FixArg> = openingBrace
 export const optArg: Parser<MOptArg | OptArg> = openingBracket
     .then(
         manyTill(latexBlockParser, closingBracket)
-    ).map(newOptArg);
+    )
+    .map(newOptArg);
 
 export const cmdArg: Parser<TeXArg> = alt(
     fixArg,
@@ -629,7 +628,7 @@ export const subOrSuperscriptSymbolParser: (a: string, b: string) => Parser<SubO
     return alt(
         string(subscriptSymbol),
         string(superscriptSymbol)
-    ).map(parsedStr => (parsedStr === subscriptSymbol ? "_" : "^"));
+    ).map(parsedStr => (parsedStr === subscriptSymbol ? SubOrSuperSymbol.SUB : SubOrSuperSymbol.SUP));
 };
 
 /**
@@ -641,7 +640,11 @@ export const shiftedScript = (sub: string, sup: string): Parser<SubOrSuperScript
         cmdArgs,
 
         function (symbol, argz) {
-            return newSubOrSuperScript(symbol, argz);
+            return newSubOrSuperScript(
+                symbol,
+                symbol === SubOrSuperSymbol.SUB ? sub : sup,
+                argz
+            );
         }
     ).map(res => {
         return res;
@@ -652,13 +655,14 @@ export const shiftedScript = (sub: string, sup: string): Parser<SubOrSuperScript
  */
 export const dolMath = math();
 
-function math(t: MathType = "Dollar",
+function math(mathType: MathType = "Dollar",
               sMath = "$",
               eMath = "$"): Parser<TeXMath> {
     return string(sMath)
         .then(
-            latexBlockParserMathMode("_", "^").many()
-                .map(str => newTeXMath(t, str))
+            latexBlockParserMathMode("_", "^")
+                .many()
+                .map(str => newTeXMath(mathType, sMath, eMath, str))
         )
         .skip(string(eMath))
         ;
@@ -671,6 +675,7 @@ export function isOk<T>(parse?: ResultInterface<T>): parse is Success<T> {
 export function isNotOk<T>(parse?: any): parse is Failure {
     return parse !== undefined && parse.status === false;
 }
+
 export function mustBeOk<T>(parse?: ResultInterface<T>): Success<T> {
     if (!isOk(parse))
         throw new Error("Expected parse to be success: " + JSON.stringify(parse));

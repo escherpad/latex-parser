@@ -177,7 +177,7 @@ export function mustBeArray(a: any, msg?: string): any[] {
 
 //noinspection JSUnusedGlobalSymbols
 export function isArray(x: any): x is any[] {
-    return x.constructor === Array;
+    return !!x && x.constructor === Array;
 }
 
 export const mconcat = <T>(mappend: (x: T, y: T) => T, ...args: T[]) => args.reduceRight(mappend);
