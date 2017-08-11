@@ -27,38 +27,37 @@ export type CharacterCategory =
 
 // TODO character code can be changed at any time. A full parser must deal with that.
 
-
-export const defaultCategories = (unicodePointer: number,
+export const defaultCategories = (char: string,
                                   // strictAboutLetters: boolean = false // TODO
 ): CharacterCategory => {
-    switch (unicodePointer) {
-        case 92:
+    switch (char) {
+        case "\\" :
             return 0;
-        case 123:
+        case "{":
             return 1;
-        case 125:
+        case "}":
             return 2;
-        case 36:
+        case "$":
             return 3;
-        case 38:
+        case "&":
             return 4;
-        case 13:
+        case "\r":
             return 5;
-        case 35:
+        case "#":
             return 6;
-        case 94:
+        case "^":
             return 7;
-        case 95:
+        case "_":
             return 8;
-        case 0:
+        case "\0":
             return 9;
-        case 32:
+        case " ":
             return 10;
-        case 126:
+        case "~":
             return 13;
-        case 37:
+        case "%":
             return 14;
-        case 127:
+        case "\d":
             return 15;
         default:
             return 11; // Assume letter
@@ -75,7 +74,7 @@ export const defaultCategories = (unicodePointer: number,
 };
 
 export interface TeXChar {
-    unicode: number;
+    string: string;
     category: CharacterCategory;
 }
 
@@ -83,14 +82,14 @@ export function convertToTeXCharsDefault(str: string): TeXChar[] {
     return convertToTeXChars(defaultCategories, str);
 }
 
-export function convertToTeXChars(categoryMap: (unicode: number) => CharacterCategory,
+export function convertToTeXChars(categoryMap: (unicode: string) => CharacterCategory,
                                   str: string): TeXChar[] {
     const chars: TeXChar[] = [];
     for (let i = 0; i < str.length; i++) {
-        const unicode: number = str.charCodeAt(i);
+        const charAt = str.charAt(i);
         chars.push({
-            unicode,
-            category: categoryMap(unicode)
+            string: charAt,
+            category: categoryMap(charAt)
         });
     }
     return chars;
