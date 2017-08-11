@@ -1,6 +1,5 @@
 import * as React from "react";
 import {StatelessComponent} from "react";
-import {Parser, Result} from "parsimmon";
 
 import {
     isTeXBraces,
@@ -11,7 +10,7 @@ import {
     isTeXEnv, isTeXLineBreak, isTeXMath,
     isTeXRaw,
     LaTeX,
-    TeXArg
+    TeXArg, isSubOrSuperScript, SubOrSuperScript, SubOrSuperSymbol
 } from "latex-parser";
 
 const Arguments: StatelessComponent<{ args: TeXArg[] }> = ({args}) => <span>
@@ -22,7 +21,7 @@ function isArray(x: any): x is LaTeX[] {
     return x.constructor === Array;
 }
 
-function renderTokens(parsed: LaTeX): React.ReactElement<any> {
+function renderTokens(parsed: LaTeX | TeXArg): React.ReactElement<any> {
     if (isTeXComment(parsed))
         return <span className={"TeXBlock " + parsed.type}>{parsed.text}<br/></span>;
     else if (isTeXRaw(parsed))
@@ -42,15 +41,24 @@ function renderTokens(parsed: LaTeX): React.ReactElement<any> {
             <Arguments args={parsed.arguments}/>
             )</span>;
     else if (isTeXMath(parsed))
-        return <span className={"TeXBlock " + parsed.type}>$ {renderTokens(parsed.latex)} $</span>;
+        return <span className={"TeXBlock " + parsed.type}>{parsed.latex.map((l, i) => <span
+            key={i}>{renderTokens(l)}</span>)}</span>;
     else if (isTeXLineBreak(parsed))
         return <div className={"TeXLine"}><br/><br/></div>;
     else if (isTeXBraces(parsed))
-        return <span className={"TeXBlock " + parsed.type}>{renderTokens(parsed.latex)}</span>;
+        return <span className={"TeXBlock " + parsed.type}>{parsed.latex.map((l, i) => <span
+            key={i}>{renderTokens(l)}</span>)}</span>;
     else if (isFixArg(parsed))
-        return <span className={"TeXBlock " + parsed.type}>{renderTokens(parsed.latex)}</span>;
+        return <span className={"TeXBlock " + parsed.type}>{parsed.latex.map((l, i) => <span
+            key={i}>{renderTokens(l)}</span>)}</span>;
+    else if (isSubOrSuperScript(parsed))
+        return parsed.type === SubOrSuperSymbol.SUB ? <sub>{parsed.arguments.map((l, i) => <span
+                key={i}>{renderTokens(l)}</span>)}</sub>
+            : <sup>{parsed.arguments.map((l, i) => <span
+                key={i}>{renderTokens(l)}</span>)}</sup>;
     else if (isOptArg(parsed))
-        return <span className={"TeXBlock " + parsed.type}>{renderTokens(parsed.latex)}</span>;
+        return <span className={"TeXBlock " + parsed.type}>{parsed.latex.map((l, i) => <span
+            key={i}>{renderTokens(l)}</span>)}</span>;
     else if (isArray(parsed))
         return <span>{parsed.map((e, i) => <span key={i}>{renderTokens(e)}</span>)}</span>;
     else {

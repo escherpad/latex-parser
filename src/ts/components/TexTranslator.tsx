@@ -88,7 +88,7 @@ export class TexTranslator extends React.PureComponent<TexProps, TexState> {
 
         this.state = {
             tex: `an   \\author[optional arg]{author name} and % a comment
-more text`,
+more text $ and ^{math} _{mode}$`,
             // styleSrc: JSON.stringify(defaultStyle, undefined, 2),
             // style: parseStyleFromProperties(defaultStyle)
         };

@@ -3,10 +3,10 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const plugins = [
     new CopyWebpackPlugin([
         // {from: "bower_components", to: "bower_components"},
-        {
-            from: "node_modules/material-components-web/dist/material-components-web.css",
-            to: "css/material-components-web.css"
-        },
+        // {
+        //     from: "node_modules/material-components-web/dist/material-components-web.css",
+        //     to: "css/material-components-web.css"
+        // },
         {
             from: "src/public"
         }
