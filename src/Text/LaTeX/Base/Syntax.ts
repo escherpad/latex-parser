@@ -720,8 +720,8 @@ export function isTeXRaw(x: any): x is TeXRaw {
 
 export function isTeXChar(x: any): x is TeXChar {
     return x !== undefined
-        // && x.charCode !== undefined
-        && typeof x === "number";
+        && typeof x.string === "string"
+        && typeof x.category === "number";
 }
 
 export function isTeXComm(x: any): x is TeXComm {

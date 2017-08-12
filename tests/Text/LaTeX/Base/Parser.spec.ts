@@ -17,7 +17,7 @@ import {
 import {
     fixArg,
     command, comment, dolMath, isSpecialCharacter, latexBlockParser, mustBeOk,
-    environment, notTextDefault, textParser
+    environment, notTextDefault, textParser, latexParser, shiftedScript
 } from "../../../../src/Text/LaTeX/Base/Parser";
 
 describe("Parser", () => {
@@ -50,28 +50,28 @@ describe("Parser", () => {
     });
 
     it("cmd", () => {
-        expect(mustBeOk(command.parse(`\\`)).value).to.deep.equal(newTeXComm(""));
-        expect(mustBeOk(command.parse(`\\^`)).value).to.deep.equal(newTeXComm("^"));
-        expect(mustBeOk(command.parse(`\\aCmd`)).value).to.deep.equal(newTeXComm("aCmd"));
-        expect(mustBeOk(command.parse(`\\aCmd[opt1][opt2]{fix}`)).value).to.deep.equal(
+        expect(mustBeOk(command("Paragraph").parse(`\\`)).value).to.deep.equal(newTeXComm(""));
+        expect(mustBeOk(command("Paragraph").parse(`\\^`)).value).to.deep.equal(newTeXComm("^"));
+        expect(mustBeOk(command("Paragraph").parse(`\\aCmd`)).value).to.deep.equal(newTeXComm("aCmd"));
+        expect(mustBeOk(command("Paragraph").parse(`\\aCmd[opt1][opt2]{fix}`)).value).to.deep.equal(
             newTeXComm("aCmd",
                 newOptArg([newTeXRaw("opt1")]),
                 newOptArg([newTeXRaw("opt2")]),
                 newFixArg([newTeXRaw("fix")])
             )
         );
-        expect(mustBeOk(command.parse(`\\aCmd{fix1}{fix2}`)).value).to.deep.equal(
+        expect(mustBeOk(command("Paragraph").parse(`\\aCmd{fix1}{fix2}`)).value).to.deep.equal(
             newTeXComm("aCmd",
                 newFixArg([newTeXRaw("fix1")]),
                 newFixArg([newTeXRaw("fix2")])
             )
         );
-        expect(mustBeOk(command.parse(`\\aCmd{\\fix{fix11}}`)).value).to.deep.equal(
+        expect(mustBeOk(command("Paragraph").parse(`\\aCmd{\\fix{fix11}}`)).value).to.deep.equal(
             newTeXComm("aCmd",
                 newFixArg([newTeXComm("fix", newFixArg([newTeXRaw("fix11")]))])
             )
         );
-        expect(mustBeOk(command.parse(`\\aCmd{\\fixOne{1}}{\\fixTwo{2}}`)).value).to.deep.equal(
+        expect(mustBeOk(command("Paragraph").parse(`\\aCmd{\\fixOne{1}}{\\fixTwo{2}}`)).value).to.deep.equal(
             newTeXComm("aCmd",
                 newFixArg([newTeXComm("fixOne", newFixArg([newTeXRaw("1")]))]),
                 newFixArg([newTeXComm("fixTwo", newFixArg([newTeXRaw("2")]))])
@@ -100,18 +100,32 @@ describe("Parser", () => {
         expect(textParser(notTextDefault).parse("l%ol").status).to.be.false;
     });
 
+    describe("latexParser", () => {
+        it("must parse complex expressions", () => {
+            expect(mustBeOk(latexParser.parse("$\\sqrt{\\it b^2 - 4}{2}$")).value).to.deep.equal(
+                [newTeXMathDol([
+                    newTeXComm("sqrt",
+                        newFixArg([newTeXComm("it"),
+                            newTeXRaw(" b"),
+                            newSubOrSuperScript(SubOrSuperSymbol.SUP, "^", []),
+                            newTeXRaw("2 - 4")
+                        ]),
+                        newFixArg([newTeXRaw("2")])
+                    )])]);
+        });
+    });
     describe("latexBlockParser", () => {
         it("text", () => {
-            expect(mustBeOk(latexBlockParser.parse("lol")).value).to.deep.equal(
+            expect(mustBeOk(latexBlockParser("Paragraph").parse("lol")).value).to.deep.equal(
                 newTeXRaw("lol")
             );
-            expect(mustBeOk(latexBlockParser.parse("l o l")).value).to.deep.equal(
+            expect(mustBeOk(latexBlockParser("Paragraph").parse("l o l")).value).to.deep.equal(
                 newTeXRaw("l o l")
             );
-            expect(mustBeOk(latexBlockParser.parse(" lol ")).value).to.deep.equal(
+            expect(mustBeOk(latexBlockParser("Paragraph").parse(" lol ")).value).to.deep.equal(
                 newTeXRaw(" lol ")
             );
-            expect(mustBeOk(latexBlockParser.parse("\nlol\n")).value).to.deep.equal(
+            expect(mustBeOk(latexBlockParser("Paragraph").parse("\nlol\n")).value).to.deep.equal(
                 newTeXRaw("\nlol\n")
             );
             expect(mustBeOk(environment.parse(`\\begin{document}
@@ -125,10 +139,10 @@ describe("Parser", () => {
 
     describe("Args", () => {
         it("fixArg", () => {
-            expect(mustBeOk(fixArg.parse("{}")).value).to.deep.equal(
+            expect(mustBeOk(fixArg("Paragraph").parse("{}")).value).to.deep.equal(
                 newFixArg([])
             );
-            expect(mustBeOk(fixArg.parse(`{txt
+            expect(mustBeOk(fixArg("Paragraph").parse(`{txt
             and %comment
             txt
             }`)).value).to.deep.equal(
@@ -162,6 +176,11 @@ describe("Parser", () => {
         });
 
         it("should parse superscript and subscript", () => {
+
+            expect(mustBeOk(shiftedScript("Math", "^", "_").parse(`^`)).value).to.deep.equal(
+                newSubOrSuperScript(SubOrSuperSymbol.SUB, "^", [])
+            );
+
             expect(mustBeOk(dolMath.parse(`$ 1_{a} 2^{b} $`)).value).to.deep.equal(
                 newTeXMathDol([
                     newTeXRaw(" 1"),
@@ -171,6 +190,7 @@ describe("Parser", () => {
                     newTeXRaw(" "),
                 ])
             );
+
         });
     });
 

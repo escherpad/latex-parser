@@ -27,6 +27,7 @@ export function mustBeKirillMode(x: any, msg?: string): KirillMode {
 /**
  */
 export type LatexMode = "Paragraph" | "Math" | "LR";
+
 export function isLatexMode(x: any): x is LatexMode {
     if (!isString(x))
         return false;

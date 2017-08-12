@@ -41,6 +41,7 @@ import {
     mustNotBeUndefined
 } from "../../../Utils";
 import {makeFailure} from "parsimmon";
+import {LatexMode} from "../../../../deprecated/lib/Latex/Mode";
 
 /** The /LaTeX/ parser.
 
@@ -472,18 +473,27 @@ export const mathSymbol = string("$");
 
 export const commandSymbol = string("\\");
 
+export function latexBlockParser(mode: LatexMode, sub = "_", sup = "^"): Parser<LaTeXRaw> {
+    switch (mode) {
+        case "Math":
+            return latexBlockParserMathMode(sub, sup);
+        default:
+            return latexBlockParserTextMode;
+    }
+}
+
 /**
  * Parser of a single 'LaTeX' block. Note: text stops on ']'; if the other parsers fail on the rest,
  * text2 handles it, starting with ']'
  */
-export const latexBlockParser: Parser<LaTeXRaw> = lazy(() => alt(
+export const latexBlockParserTextMode: Parser<LaTeXRaw> = lazy(() => alt(
     alt(
         textParser(notTextDefault) // <?> "text"
         , dolMath         // <?> "inline math ($)"
         , comment         // <?> "comment"
         , textParser(notTextDefaultAndNotClosingBracket)           // <?> "text2"
         , environment     // <?> "environment"
-        , command         // <?> "command"
+        , command("Paragraph")         // <?> "command"
     )
     )
 );
@@ -491,23 +501,23 @@ export const latexBlockParser: Parser<LaTeXRaw> = lazy(() => alt(
 export const latexBlockParserMathMode = (sub: string, sup: string): Parser<LaTeXRaw> => {
     return lazy(() => alt(
         alt(
-            shiftedScript(sub, sup)
-            , textParser(notTextMathMode)              // <?> "text"
-            , dolMath         // <?> "inline math ($)"
-            , comment         // <?> "comment"
+            shiftedScript("Math", sub, sup)
+            , textParser(notTextMathMode)                               // <?> "text"
+            , dolMath                                                   // <?> "inline math ($)"
+            , comment                                                   // <?> "comment"
             , textParser(notTextMathModeAndNotClosingBracket)           // <?> "text2"
-            , environment     // <?> "environment"
-            , command         // <?> "command"
+            , environment                                               // <?> "environment"
+            , command("Math")                                                   // <?> "command"
         )
         )
     );
 };
 
-export const latexParser: Parser<LaTeXRaw[]> = latexBlockParser.many();
+export const latexParser: Parser<LaTeXRaw[]> = latexBlockParserTextMode.many();
 
 const anonym = string(lbrace)
     .then(
-        latexBlockParser.many()
+        latexBlockParserTextMode.many()
     )
     .skip(string(rbrace));
 
@@ -527,7 +537,7 @@ export const env = Parser(function (input: string, i: number): Result<TeXEnv> {
 
     // TODO args
 
-    return manyTill(latexBlockParser, string("\\end")
+    return manyTill(latexBlockParserTextMode, string("\\end")
         .then(string(lbrace))
         .then(spaces)
         .then(string(envName))
@@ -558,33 +568,39 @@ const closingBrace = string("}");
 
 const isClosingBrace = (str: string) => str === ("}");
 
-export const fixArg: Parser<FixArg> = openingBrace
-    .then(
-        manyTill(latexBlockParser, closingBrace)
-    ).map(newFixArg)
-;
+export function fixArg(mode: LatexMode): Parser<FixArg> {
+    return openingBrace
+        .then(
+            manyTill(latexBlockParser(mode, "_"), closingBrace)
+        ).map(newFixArg);
+}
 
-export const optArg: Parser<MOptArg | OptArg> = openingBracket
-    .then(
-        manyTill(latexBlockParser, closingBracket)
-    )
-    .map(newOptArg);
+export function optArg(mode: LatexMode): Parser<MOptArg | OptArg> {
+    return openingBracket
+        .then(
+            manyTill(latexBlockParser(mode), closingBracket)
+        )
+        .map(newOptArg);
+}
 
-export const cmdArg: Parser<TeXArg> = alt(
-    fixArg,
-    optArg
-    // => newTeXArg(str)
-);
+export function cmdArg(mode: LatexMode): Parser<TeXArg> {
+    return alt(
+        fixArg(mode),
+        optArg(mode)
+        // => newTeXArg(str)
+    );
+}
 
 /**
  * Command Arguments
  */
-export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
-    string("{}").map(() => []),
+export function cmdArgs(mode: LatexMode): Parser<TeXArg[] | undefined> {
+    return alt(
+        string("{}").map(() => []),
 
-    cmdArg.map(s => s).atLeast(0)
-).map(e => e);
-
+        cmdArg(mode).map(s => s).atLeast(0)
+    ).map(e => e);
+}
 
 // cmdArgs = try (string "{}" >> return (Just []))
 // <|> fmap Just (try $ many1 cmdArg)
@@ -606,23 +622,22 @@ export const cmdArgs: Parser<TeXArg[] | undefined> = alt(
 /**
  * Command
  */
-export const command: Parser<TeXComm> = // alt(
+export function command(mode: LatexMode): Parser<TeXComm> { // alt(
     // commandSymbol.then(eof).map(() => {
     //     return {};
     // }),
-
-    seqMap(
+    return seqMap(
         commandSymbol,
         alt(specialChar, takeTill(endCmd)),
-        cmdArgs,
+        cmdArgs(mode),
 
         function (ignored, name, argz) {
             return argz !== undefined ? newTeXComm(name, ...argz) : newTeXComm(name);
         }
-        // )
     ).map(res => {
         return res;
     });
+}
 
 export const subOrSuperscriptSymbolParser: (a: string, b: string) => Parser<SubOrSuperSymbol> = function (subscriptSymbol, superscriptSymbol) {
     return alt(
@@ -634,22 +649,23 @@ export const subOrSuperscriptSymbolParser: (a: string, b: string) => Parser<SubO
 /**
  * (sub/super)-script
  */
-export const shiftedScript = (sub: string, sup: string): Parser<SubOrSuperScript> => { // alt(
-    return seqMap(
-        subOrSuperscriptSymbolParser(sub, sup),
-        cmdArgs,
+export function shiftedScript(mode: LatexMode, sub: string, sup: string): Parser<SubOrSuperScript> { // alt(
+        return seqMap(
+            subOrSuperscriptSymbolParser(sub, sup),
+            cmdArgs(mode),
 
-        function (symbol, argz) {
-            return newSubOrSuperScript(
-                symbol,
-                symbol === SubOrSuperSymbol.SUB ? sub : sup,
-                argz
-            );
-        }
-    ).map(res => {
-        return res;
-    });
-};
+            function (symbol, argz) {
+                return newSubOrSuperScript(
+                    symbol,
+                    symbol === SubOrSuperSymbol.SUB ? sub : sup,
+                    argz
+                );
+            }
+        ).map(res => {
+            return res;
+        });
+}
+
 /**
  * Math
  */
@@ -660,7 +676,7 @@ function math(mathType: MathType = "Dollar",
               eMath = "$"): Parser<TeXMath> {
     return string(sMath)
         .then(
-            latexBlockParserMathMode("_", "^")
+            latexBlockParser("Math", "_")
                 .many()
                 .map(str => newTeXMath(mathType, sMath, eMath, str))
         )
