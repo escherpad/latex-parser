@@ -1,6 +1,6 @@
 {
   "name": "latex-parser",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "description": "LaTeX parser",
   "keywords": [
     "LaTeX",
@@ -32,7 +32,7 @@
   "types": "main.d.ts",
   "repository": "git@github.com:digitalheir/latex-parser.git",
   "dependencies": {
-    "parsimmon": "^1.4.0"
+    "parsimmon": "^1.6.2"
   },
   "devDependencies": {
     "typings": "^2.1.1",

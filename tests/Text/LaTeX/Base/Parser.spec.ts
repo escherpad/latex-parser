@@ -102,16 +102,23 @@ describe("Parser", () => {
 
     describe("latexParser", () => {
         it("must parse complex expressions", () => {
-            expect(mustBeOk(latexParser.parse("$\\sqrt{\\it b^2 - 4}{2}$")).value).to.deep.equal(
-                [newTeXMathDol([
-                    newTeXComm("sqrt",
-                        newFixArg([newTeXComm("it"),
-                            newTeXRaw(" b"),
-                            newSubOrSuperScript(SubOrSuperSymbol.SUP, "^", []),
-                            newTeXRaw("2 - 4")
-                        ]),
-                        newFixArg([newTeXRaw("2")])
-                    )])]);
+            expect(mustBeOk(latexParser.parse("$it = \\frac{-\\sqrt{\\it b^2 - 4}{2}}$")).value).to.deep.equal(
+                [
+                    newTeXMathDol([
+                        newTeXRaw("it = "),
+                        newTeXComm("frac",
+                            newFixArg([
+                                newTeXRaw("-"),
+                                newTeXComm("sqrt",
+                                    newFixArg([newTeXComm("it"),
+                                        newTeXRaw(" b"),
+                                        newSubOrSuperScript(SubOrSuperSymbol.SUP, "^", []),
+                                        newTeXRaw("2 - 4")
+                                    ]),
+                                    newFixArg([newTeXRaw("2")])
+                                )]))])
+                ]
+            );
         });
     });
     describe("latexBlockParser", () => {

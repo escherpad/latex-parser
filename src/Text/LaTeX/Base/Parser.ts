@@ -41,7 +41,7 @@ import {
     mustNotBeUndefined
 } from "../../../Utils";
 import {makeFailure} from "parsimmon";
-import {LatexMode} from "../../../../deprecated/lib/Latex/Mode";
+import {LatexMode} from "./LatexMode";
 
 /** The /LaTeX/ parser.
 
